@@ -1,4 +1,4 @@
-package de.epiceric.shopchest.utils;
+package de.epiceric.shopchest.config.hologram;
 
 public enum Operator {
 

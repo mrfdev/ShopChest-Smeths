@@ -36,7 +36,7 @@ import org.codemc.worldguardwrapper.WorldGuardWrapper;
 
 import de.epiceric.shopchest.command.ShopCommand;
 import de.epiceric.shopchest.config.Config;
-import de.epiceric.shopchest.config.HologramFormat;
+import de.epiceric.shopchest.config.hologram.HologramFormat;
 import de.epiceric.shopchest.event.ShopInitializedEvent;
 import de.epiceric.shopchest.external.BentoBoxShopFlag;
 import de.epiceric.shopchest.external.PlotSquaredOldShopFlag;

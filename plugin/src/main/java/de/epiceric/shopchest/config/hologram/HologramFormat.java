@@ -1,4 +1,4 @@
-package de.epiceric.shopchest.config;
+package de.epiceric.shopchest.config.hologram;
 
 import java.io.File;
 import java.util.List;
@@ -10,11 +10,11 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import de.epiceric.shopchest.config.Placeholder;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import de.epiceric.shopchest.ShopChest;
-import de.epiceric.shopchest.utils.Operator;
 
 public class HologramFormat {
 
@@ -55,26 +55,37 @@ public class HologramFormat {
     public String getFormat(int line, Map<Requirement, Object> reqMap, Map<Placeholder, Object> plaMap) {
         ConfigurationSection options = config.getConfigurationSection("lines." + line + ".options");
 
+        // For every option
         optionLoop:
         for (String key : options.getKeys(false)) {
             ConfigurationSection option = options.getConfigurationSection(key);
             List<String> requirements = option.getStringList("requirements");
 
-            String format = option.getString("format");
-
+            // Check every requirement
             for (String sReq : requirements) {
                 for (Requirement req : reqMap.keySet()) {
+                    // If the configuration requirement contain a requirement specified by the shop
                     if (sReq.contains(req.toString())) {
+                        // Then evaluate the requirement.
+                        // If the requirement is not fulfilled, skip this option and go to the next one
                         if (!evalRequirement(sReq, reqMap)) {
                             continue optionLoop;
                         }
+                        // TODO Maybe skip to the next config requirement as the requirement has been found and is valid
                     }
                 }
             }
 
+            // Here, every requirement is fulfilled and this is the first valid option
+
+            String format = option.getString("format");
+
+            // Evaluate placeholders and return the formatted line
             return evalPlaceholder(format, plaMap);
         }
 
+        // No option matching to que shop requirements
+        // Returning an empty string
         return "";
     }
 
@@ -158,12 +169,12 @@ public class HologramFormat {
                 Matcher matcher = SIMPLE_NUMERIC_CONDITION.matcher(cond);
 
                 if (matcher.find()) {
-                    Double a, b;
+                    double a, b;
                     Operator operator;
                     try {
-                        a = Double.valueOf(matcher.group(1));
+                        a = Double.parseDouble(matcher.group(1));
                         operator = Operator.from(matcher.group(2));
-                        b = Double.valueOf(matcher.group(3));
+                        b = Double.parseDouble(matcher.group(3));
 
                         return operator.compare(a, b);
                     } catch (IllegalArgumentException ignored) {

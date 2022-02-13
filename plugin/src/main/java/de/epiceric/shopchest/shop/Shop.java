@@ -22,7 +22,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import de.epiceric.shopchest.ShopChest;
 import de.epiceric.shopchest.config.Config;
-import de.epiceric.shopchest.config.HologramFormat;
+import de.epiceric.shopchest.config.hologram.HologramFormat;
 import de.epiceric.shopchest.config.Placeholder;
 import de.epiceric.shopchest.exceptions.ChestNotFoundException;
 import de.epiceric.shopchest.exceptions.NotEnoughSpaceException;
