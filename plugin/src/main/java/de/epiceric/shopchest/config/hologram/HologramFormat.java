@@ -18,6 +18,12 @@ import de.epiceric.shopchest.ShopChest;
 
 public class HologramFormat {
 
+    /*
+    TODO Change implementation of this class
+      -> Deserialize from the configuration and load it some way to avoid String manipulation at each method invocation
+       -> Rework the current String manipulation process to add complex expression evaluation WITHOUT nashorn engine
+     */
+
     public enum Requirement {
         VENDOR, AMOUNT, ITEM_TYPE, ITEM_NAME, HAS_ENCHANTMENT, BUY_PRICE,
         SELL_PRICE, HAS_POTION_EFFECT, IS_MUSIC_DISC, IS_POTION_EXTENDED, IS_BANNER_PATTERN,
@@ -63,6 +69,7 @@ public class HologramFormat {
 
             // Check every requirement
             for (String sReq : requirements) {
+                //TODO Maybe remove some loops as every requirements are re evaluated in the #evalRequirement
                 for (Requirement req : reqMap.keySet()) {
                     // If the configuration requirement contain a requirement specified by the shop
                     if (sReq.contains(req.toString())) {
@@ -97,6 +104,9 @@ public class HologramFormat {
      * @return Whether the hologram text has to change dynamically without reloading
      */
     public boolean isDynamic() {
+        // Return whether an option contains STOCK or CHEST_SPACE :
+        // - In the format
+        // - In one of its requirement
         int count = getLineCount();
         for (int i = 0; i < count; i++) {
             ConfigurationSection options = config.getConfigurationSection("lines." + i + ".options");
@@ -127,7 +137,7 @@ public class HologramFormat {
         return config.getConfigurationSection("lines").getKeys(false).size();
     }
 
-    /** 
+    /**
      * @return Configuration of the "hologram-format.yml" file
      */
     public YamlConfiguration getConfig() {
@@ -143,6 +153,7 @@ public class HologramFormat {
     public boolean evalRequirement(String condition, Map<Requirement, Object> values) {
         String cond = condition;
 
+        // Double-check the presence of a requirement (WTF ?)
         for (HologramFormat.Requirement req : HologramFormat.Requirement.values()) {
             if (cond.contains(req.toString()) && values.containsKey(req)) {
                 Object val = values.get(req);
@@ -155,6 +166,8 @@ public class HologramFormat {
                 cond = cond.replace(req.toString(), sVal);
             }
         }
+
+        // Evaluate three basic condition : Direct Boolean, Math comparison and String equality
 
         if (cond.equals("true")) {
             // e.g.: ADMIN_SHOP
@@ -203,6 +216,7 @@ public class HologramFormat {
             }
 
             // complex comparison
+            // Like && and || or other arithmetic operations
             try {
                 return (boolean) engine.eval(cond);
             } catch (ScriptException e) {
@@ -220,6 +234,7 @@ public class HologramFormat {
      * @return Result of the condition
      */
     public String evalPlaceholder(String string, Map<Placeholder, Object> values) {
+        // Detect and evaluate accolade inner parts
         try {
             Matcher matcher = Pattern.compile("\\{([^}]+)}").matcher(string);
             String newString = string;

@@ -260,6 +260,8 @@ public class Shop {
 
         ItemStack itemStack = getProduct().getItemStack();
 
+        // Create requirements base on the shop value
+        // (As requirements are always the same, only set requirements to the shop value)
         Map<HologramFormat.Requirement, Object> requirements = new EnumMap<>(HologramFormat.Requirement.class);
         requirements.put(HologramFormat.Requirement.VENDOR, getVendor().getName());
         requirements.put(HologramFormat.Requirement.AMOUNT, getProduct().getAmount());
@@ -280,6 +282,7 @@ public class Shop {
         requirements.put(HologramFormat.Requirement.CHEST_SPACE, Utils.getFreeSpaceForItem(inventory, itemStack));
         requirements.put(HologramFormat.Requirement.DURABILITY, itemStack.getDurability());
 
+        // Same as requirements
         Map<Placeholder, Object> placeholders = new EnumMap<>(Placeholder.class);
         placeholders.put(Placeholder.VENDOR, getVendor().getName());
         placeholders.put(Placeholder.AMOUNT, getProduct().getAmount());
