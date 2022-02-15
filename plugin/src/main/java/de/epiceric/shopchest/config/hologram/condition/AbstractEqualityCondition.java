@@ -19,6 +19,19 @@ public abstract class AbstractEqualityCondition<T> implements Condition {
         this.secondArgProvider = secondArgProvider;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AbstractEqualityCondition<?> that = (AbstractEqualityCondition<?>) o;
+        return Objects.equals(firstArgProvider, that.firstArgProvider) && Objects.equals(secondArgProvider, that.secondArgProvider);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(firstArgProvider, secondArgProvider);
+    }
+
     public static class EqualityCondition<T> extends AbstractEqualityCondition<T> {
 
         public EqualityCondition(

@@ -3,6 +3,7 @@ package de.epiceric.shopchest.config.hologram.calculation;
 import de.epiceric.shopchest.config.hologram.HologramFormat;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -23,6 +24,19 @@ public interface Calculation {
         ) {
             this.firstArgProvider = firstArgProvider;
             this.secondArgProvider = secondArgProvider;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            AbstractCalculation that = (AbstractCalculation) o;
+            return Objects.equals(firstArgProvider, that.firstArgProvider) && Objects.equals(secondArgProvider, that.secondArgProvider);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(firstArgProvider, secondArgProvider);
         }
 
     }

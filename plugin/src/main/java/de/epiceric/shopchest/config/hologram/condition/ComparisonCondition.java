@@ -3,6 +3,7 @@ package de.epiceric.shopchest.config.hologram.condition;
 import de.epiceric.shopchest.config.hologram.HologramFormat;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 public abstract class ComparisonCondition implements Condition {
@@ -16,6 +17,19 @@ public abstract class ComparisonCondition implements Condition {
     ) {
         this.firstArgProvider = firstArgProvider;
         this.secondArgProvider = secondArgProvider;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ComparisonCondition that = (ComparisonCondition) o;
+        return Objects.equals(firstArgProvider, that.firstArgProvider) && Objects.equals(secondArgProvider, that.secondArgProvider);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(firstArgProvider, secondArgProvider);
     }
 
     public static class GreaterCondition extends ComparisonCondition {

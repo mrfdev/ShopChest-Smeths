@@ -3,6 +3,7 @@ package de.epiceric.shopchest.config.hologram.provider;
 import de.epiceric.shopchest.config.hologram.HologramFormat;
 
 import java.util.Map;
+import java.util.Objects;
 
 public abstract class MapProvider<T> implements RequirementProvider<T> {
 
@@ -10,6 +11,19 @@ public abstract class MapProvider<T> implements RequirementProvider<T> {
 
     public MapProvider(HologramFormat.Requirement requirement) {
         this.requirement = requirement;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MapProvider<?> that = (MapProvider<?>) o;
+        return requirement == that.requirement;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(requirement);
     }
 
     @Override
