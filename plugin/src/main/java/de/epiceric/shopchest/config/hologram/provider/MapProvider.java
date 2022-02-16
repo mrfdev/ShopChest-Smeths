@@ -1,15 +1,14 @@
 package de.epiceric.shopchest.config.hologram.provider;
 
-import de.epiceric.shopchest.config.hologram.HologramFormat;
-
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
-public abstract class MapProvider<T> implements RequirementProvider<T> {
+public abstract class MapProvider<P, T> implements Function<Map<P, Object>, T> {
 
-    protected final HologramFormat.Requirement requirement;
+    protected final P requirement;
 
-    public MapProvider(HologramFormat.Requirement requirement) {
+    public MapProvider(P requirement) {
         this.requirement = requirement;
     }
 
@@ -17,7 +16,7 @@ public abstract class MapProvider<T> implements RequirementProvider<T> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        MapProvider<?> that = (MapProvider<?>) o;
+        MapProvider<?, ?> that = (MapProvider<?, ?>) o;
         return requirement == that.requirement;
     }
 
@@ -31,41 +30,41 @@ public abstract class MapProvider<T> implements RequirementProvider<T> {
         return requirement.toString();
     }
 
-    public final static class StringMapProvider extends MapProvider<String> {
+    public final static class StringMapProvider<P> extends MapProvider<P, String> {
 
-        public StringMapProvider(HologramFormat.Requirement requirement) {
+        public StringMapProvider(P requirement) {
             super(requirement);
         }
 
         @Override
-        public String apply(Map<HologramFormat.Requirement, Object> requirementValues) {
-            return (String) requirementValues.get(requirement);
+        public String apply(Map<P, Object> values) {
+            return (String) values.get(requirement);
         }
 
     }
 
-    public final static class BooleanMapProvider extends MapProvider<Boolean> {
+    public final static class BooleanMapProvider<P> extends MapProvider<P, Boolean> {
 
-        public BooleanMapProvider(HologramFormat.Requirement requirement) {
+        public BooleanMapProvider(P requirement) {
             super(requirement);
         }
 
         @Override
-        public Boolean apply(Map<HologramFormat.Requirement, Object> requirementValues) {
-            return (Boolean) requirementValues.get(requirement);
+        public Boolean apply(Map<P, Object> values) {
+            return (Boolean) values.get(requirement);
         }
 
     }
 
-    public final static class DoubleMapProvider extends MapProvider<Double> {
+    public final static class DoubleMapProvider<P> extends MapProvider<P, Double> {
 
-        public DoubleMapProvider(HologramFormat.Requirement requirement) {
+        public DoubleMapProvider(P requirement) {
             super(requirement);
         }
 
         @Override
-        public Double apply(Map<HologramFormat.Requirement, Object> requirementValues) {
-            return (Double) requirementValues.get(requirement);
+        public Double apply(Map<P, Object> values) {
+            return (Double) values.get(requirement);
         }
 
     }

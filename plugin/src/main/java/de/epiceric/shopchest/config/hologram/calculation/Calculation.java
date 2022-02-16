@@ -1,26 +1,23 @@
 package de.epiceric.shopchest.config.hologram.calculation;
 
-import de.epiceric.shopchest.config.hologram.HologramFormat;
-
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
 /**
  * Represents a hologram calculation
  */
-public interface Calculation {
+public interface Calculation<P> {
 
-    double calculate(Map<HologramFormat.Requirement, Object> provider);
+    double calculate(P provider);
 
-    abstract class AbstractCalculation implements Calculation {
+    abstract class AbstractCalculation<P> implements Calculation<P> {
 
-        protected final Function<Map<HologramFormat.Requirement, Object>, Double> firstArgProvider;
-        protected final Function<Map<HologramFormat.Requirement, Object>, Double> secondArgProvider;
+        protected final Function<P, Double> firstArgProvider;
+        protected final Function<P, Double> secondArgProvider;
 
         public AbstractCalculation(
-                Function<Map<HologramFormat.Requirement, Object>, Double> firstArgProvider,
-                Function<Map<HologramFormat.Requirement, Object>, Double> secondArgProvider
+                Function<P, Double> firstArgProvider,
+                Function<P, Double> secondArgProvider
         ) {
             this.firstArgProvider = firstArgProvider;
             this.secondArgProvider = secondArgProvider;
@@ -30,7 +27,7 @@ public interface Calculation {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            AbstractCalculation that = (AbstractCalculation) o;
+            AbstractCalculation<?> that = (AbstractCalculation<?>) o;
             return Objects.equals(firstArgProvider, that.firstArgProvider) && Objects.equals(secondArgProvider, that.secondArgProvider);
         }
 
@@ -41,18 +38,18 @@ public interface Calculation {
 
     }
 
-    class Addition extends AbstractCalculation {
+    class Addition<P> extends AbstractCalculation<P> {
 
         public Addition(
-                Function<Map<HologramFormat.Requirement, Object>, Double> firstArgProvider,
-                Function<Map<HologramFormat.Requirement, Object>, Double> secondArgProvider
+                Function<P, Double> firstArgProvider,
+                Function<P, Double> secondArgProvider
         ) {
             super(firstArgProvider, secondArgProvider);
         }
 
         @Override
-        public double calculate(Map<HologramFormat.Requirement, Object> requirementValues) {
-            return this.firstArgProvider.apply(requirementValues) + secondArgProvider.apply(requirementValues);
+        public double calculate(P values) {
+            return this.firstArgProvider.apply(values) + secondArgProvider.apply(values);
         }
 
         @Override
@@ -61,18 +58,18 @@ public interface Calculation {
         }
     }
 
-    class Subtraction extends AbstractCalculation {
+    class Subtraction<P> extends AbstractCalculation<P> {
 
         public Subtraction(
-                Function<Map<HologramFormat.Requirement, Object>, Double> firstArgProvider,
-                Function<Map<HologramFormat.Requirement, Object>, Double> secondArgProvider
+                Function<P, Double> firstArgProvider,
+                Function<P, Double> secondArgProvider
         ) {
             super(firstArgProvider, secondArgProvider);
         }
 
         @Override
-        public double calculate(Map<HologramFormat.Requirement, Object> requirementValues) {
-            return this.firstArgProvider.apply(requirementValues) - secondArgProvider.apply(requirementValues);
+        public double calculate(P values) {
+            return this.firstArgProvider.apply(values) - secondArgProvider.apply(values);
         }
 
         @Override
@@ -81,18 +78,18 @@ public interface Calculation {
         }
     }
 
-    class Multiplication extends AbstractCalculation {
+    class Multiplication<P> extends AbstractCalculation<P> {
 
         public Multiplication(
-                Function<Map<HologramFormat.Requirement, Object>, Double> firstArgProvider,
-                Function<Map<HologramFormat.Requirement, Object>, Double> secondArgProvider
+                Function<P, Double> firstArgProvider,
+                Function<P, Double> secondArgProvider
         ) {
             super(firstArgProvider, secondArgProvider);
         }
 
         @Override
-        public double calculate(Map<HologramFormat.Requirement, Object> requirementValues) {
-            return this.firstArgProvider.apply(requirementValues) * secondArgProvider.apply(requirementValues);
+        public double calculate(P values) {
+            return this.firstArgProvider.apply(values) * secondArgProvider.apply(values);
         }
 
         @Override
@@ -101,18 +98,18 @@ public interface Calculation {
         }
     }
 
-    class Division extends AbstractCalculation {
+    class Division<P> extends AbstractCalculation<P> {
 
         public Division(
-                Function<Map<HologramFormat.Requirement, Object>, Double> firstArgProvider,
-                Function<Map<HologramFormat.Requirement, Object>, Double> secondArgProvider
+                Function<P, Double> firstArgProvider,
+                Function<P, Double> secondArgProvider
         ) {
             super(firstArgProvider, secondArgProvider);
         }
 
         @Override
-        public double calculate(Map<HologramFormat.Requirement, Object> requirementValues) {
-            return this.firstArgProvider.apply(requirementValues) / secondArgProvider.apply(requirementValues);
+        public double calculate(P values) {
+            return this.firstArgProvider.apply(values) / secondArgProvider.apply(values);
         }
 
         @Override
@@ -121,18 +118,18 @@ public interface Calculation {
         }
     }
 
-    class Modulo extends AbstractCalculation {
+    class Modulo<P> extends AbstractCalculation<P> {
 
         public Modulo(
-                Function<Map<HologramFormat.Requirement, Object>, Double> firstArgProvider,
-                Function<Map<HologramFormat.Requirement, Object>, Double> secondArgProvider
+                Function<P, Double> firstArgProvider,
+                Function<P, Double> secondArgProvider
         ) {
             super(firstArgProvider, secondArgProvider);
         }
 
         @Override
-        public double calculate(Map<HologramFormat.Requirement, Object> requirementValues) {
-            return this.firstArgProvider.apply(requirementValues) % secondArgProvider.apply(requirementValues);
+        public double calculate(P values) {
+            return this.firstArgProvider.apply(values) % secondArgProvider.apply(values);
         }
 
         @Override

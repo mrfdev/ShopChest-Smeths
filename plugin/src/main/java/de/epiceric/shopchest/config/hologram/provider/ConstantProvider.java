@@ -1,11 +1,9 @@
 package de.epiceric.shopchest.config.hologram.provider;
 
-import de.epiceric.shopchest.config.hologram.HologramFormat;
-
-import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
-public class ConstantProvider<T> implements RequirementProvider<T> {
+public class ConstantProvider<P, T> implements Function<P, T> {
 
     private final T constant;
 
@@ -15,7 +13,7 @@ public class ConstantProvider<T> implements RequirementProvider<T> {
 
 
     @Override
-    public T apply(Map<HologramFormat.Requirement, Object> requirementObjectMap) {
+    public T apply(P values) {
         return constant;
     }
 
@@ -23,7 +21,7 @@ public class ConstantProvider<T> implements RequirementProvider<T> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ConstantProvider<?> that = (ConstantProvider<?>) o;
+        ConstantProvider<?, ?> that = (ConstantProvider<?, ?>) o;
         return Objects.equals(constant, that.constant);
     }
 

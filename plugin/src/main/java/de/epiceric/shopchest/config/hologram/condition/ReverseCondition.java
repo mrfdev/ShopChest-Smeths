@@ -1,28 +1,25 @@
 package de.epiceric.shopchest.config.hologram.condition;
 
-import de.epiceric.shopchest.config.hologram.HologramFormat;
-
-import java.util.Map;
 import java.util.Objects;
 
-public class ReverseCondition implements Condition {
+public class ReverseCondition<P> implements Condition<P> {
 
-    private final Condition condition;
+    private final Condition<P> condition;
 
-    public ReverseCondition(Condition condition) {
+    public ReverseCondition(Condition<P> condition) {
         this.condition = condition;
     }
 
     @Override
-    public boolean test(Map<HologramFormat.Requirement, Object> requirementValues) {
-        return !condition.test(requirementValues);
+    public boolean test(P values) {
+        return !condition.test(values);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ReverseCondition that = (ReverseCondition) o;
+        ReverseCondition<?> that = (ReverseCondition<?>) o;
         return Objects.equals(condition, that.condition);
     }
 

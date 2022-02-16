@@ -1,29 +1,26 @@
 package de.epiceric.shopchest.config.hologram.condition;
 
-import de.epiceric.shopchest.config.hologram.HologramFormat;
-
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
-public class BooleanCondition implements Condition {
+public class BooleanCondition<P> implements Condition<P> {
 
-    private final Function<Map<HologramFormat.Requirement, Object>, Boolean> booleanProvider;
+    private final Function<P, Boolean> booleanProvider;
 
-    public BooleanCondition(Function<Map<HologramFormat.Requirement, Object>, Boolean> booleanProvider) {
+    public BooleanCondition(Function<P, Boolean> booleanProvider) {
         this.booleanProvider = booleanProvider;
     }
 
     @Override
-    public boolean test(Map<HologramFormat.Requirement, Object> requirementValues) {
-        return booleanProvider.apply(requirementValues);
+    public boolean test(P values) {
+        return booleanProvider.apply(values);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        BooleanCondition that = (BooleanCondition) o;
+        BooleanCondition<?> that = (BooleanCondition<?>) o;
         return Objects.equals(booleanProvider, that.booleanProvider);
     }
 
