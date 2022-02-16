@@ -30,6 +30,7 @@ public class FormatParser {
             // Add the char to the current string
             if (currentString != null) {
                 currentString.append(currentChar);
+                continue;
             }
 
             // Reverse detection
