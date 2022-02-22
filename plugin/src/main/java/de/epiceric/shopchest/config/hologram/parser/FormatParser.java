@@ -1,9 +1,12 @@
 package de.epiceric.shopchest.config.hologram.parser;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import de.epiceric.shopchest.config.hologram.condition.Condition;
+import de.epiceric.shopchest.config.hologram.condition.ProviderCondition;
+import de.epiceric.shopchest.config.hologram.condition.ReverseCondition;
+import de.epiceric.shopchest.config.hologram.provider.MapProvider;
+
+import java.util.*;
+import java.util.function.Function;
 
 public class FormatParser {
 
@@ -152,14 +155,15 @@ public class FormatParser {
         final Counter counter = new Counter();
         final List<Token<?>> resolvedTokens = resolveNode(tokenIterator, counter).getValue();
         if (counter.get() > 0) {
+            // TODO create a custom exception
             throw new RuntimeException("Start unit '(' without closing it");
         } else if (counter.get() < 0) {
+            // TODO create a custom exception
             throw new RuntimeException("End unit ')' without starting it");
         }
         return resolvedTokens;
     }
 
-    @SuppressWarnings("unchecked")
     public Token<List<Token<?>>> resolveNode(Iterator<Token<?>> tokens, Counter counter) {
         final List<Token<?>> nodeTokens = new LinkedList<>();
         while (tokens.hasNext()) {
@@ -177,13 +181,97 @@ public class FormatParser {
             // TODO Create a custom exception
             throw new RuntimeException("Empty unit '( )'");
         }
+        // Extract if there is useless parenthesis
         if (nodeTokens.size() == 1) {
             final Token<?> token = nodeTokens.get(0);
-            if (token.getType() == Token.NODE) {
-                return (Token<List<Token<?>>>) token;
+            final Token<List<Token<?>>> typedToken = getTypedNoteToken(token);
+            if (typedToken != null) {
+                return typedToken;
             }
         }
         return new Token<>(Token.NODE, nodeTokens);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Token<List<Token<?>>> getTypedNoteToken(Token<?> token) {
+        if (token.getType() == Token.NODE) {
+            return (Token<List<Token<?>>>) token;
+        }
+        return null;
+    }
+
+    public <P> Token<?> createFunctions(Iterable<Token<?>> tokens, Function<String, P> providerFunction, Map<P, Class<?>> providerTypes) {
+        Chain<Token<?>> tokensChain = Chain.getChain(tokens);
+
+        // Node
+        Chain<Token<?>> nodeChain = tokensChain;
+        while (nodeChain != null) {
+            final Token<?> token = nodeChain.getValue();
+            final Token<List<Token<?>>> typedToken = getTypedNoteToken(token);
+            if (typedToken != null) {
+                nodeChain.setValue(createFunctions(typedToken.getValue(), providerFunction, providerTypes));
+            }
+            nodeChain = nodeChain.getAfter();
+        }
+
+        // Reverse
+        Chain<Token<?>> reverseChain = tokensChain;
+        while (reverseChain != null) {
+            // Reverse check
+            if (reverseChain.getValue().getType() == Token.REVERSE) {
+                final Chain<Token<?>> nextChain = reverseChain.getAfter();
+                // Next check
+                if (nextChain == null) {
+                    // TODO Create custom exceptions
+                    throw new RuntimeException("Try to reverse a condition that does not exist");
+                }
+                final Token<?> nextToken = nextChain.getValue();
+
+                // Create reversed
+                final Condition<?> reversed;
+                final boolean isValue = nextToken.getType() == Token.VALUE;
+                if (isValue || nextToken.getType() == Token.VALUE) {
+                    if (isValue) {
+                        final String value = (String) nextToken.getValue();
+                        final P provided = providerFunction.apply(value);
+                        // It uses a valid provided value
+                        if (provided != null) {
+                            final Class<?> providedClass = providerTypes.get(provided);
+                            // The provided value is a boolean
+                            if (providedClass == Boolean.class) {
+                                reversed = new ReverseCondition<>(new ProviderCondition<>(
+                                        new MapProvider.BooleanMapProvider<>(provided)
+                                ));
+                            } else {
+                                throw new RuntimeException("'" + value + "' can not be used as a boolean");
+                            }
+                        } else {
+                            throw new RuntimeException("'" + value + "' does not exist");
+                        }
+                    }
+                    // It's a condition
+                    else {
+                        reversed = new ReverseCondition<>((Condition<?>) nextToken.getValue());
+                    }
+                } else {
+                    throw new RuntimeException("Try to reverse something that does not represent a condition");
+                }
+
+                // Set the chain
+                final Chain<Token<?>> afterConditionChain = nextChain.getAfter();
+                reverseChain.setValue(new Token<>(Token.CONDITION, reversed));
+                if (afterConditionChain != null) {
+                    afterConditionChain.setBefore(reverseChain);
+                    reverseChain.setAfter(afterConditionChain);
+                } else {
+                    reverseChain.setAfter(null);
+                }
+            }
+
+            reverseChain = reverseChain.getAfter();
+        }
+
+        return tokensChain == null ? null : tokensChain.getValue();
     }
 
 }

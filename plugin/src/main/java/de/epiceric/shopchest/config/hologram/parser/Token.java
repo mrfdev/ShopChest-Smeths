@@ -1,5 +1,8 @@
 package de.epiceric.shopchest.config.hologram.parser;
 
+import de.epiceric.shopchest.config.hologram.calculation.Calculation;
+import de.epiceric.shopchest.config.hologram.condition.Condition;
+
 import java.util.List;
 
 public class Token<T> {
@@ -14,6 +17,8 @@ public class Token<T> {
     public final static TokenType<LogicOperator> LOGIC_OPERATOR = new TokenType<>("Logic operator");
     public final static TokenType<CalculationOperator> CALCULATION_OPERATOR = new TokenType<>("Calculation operator");
     public final static TokenType<List<Token<?>>> NODE = new TokenType<>("Node");
+    public final static TokenType<Calculation<?>> CALCULATION = new TokenType<>("Calculation");
+    public final static TokenType<Condition<?>> CONDITION = new TokenType<>("Condition");
     private final TokenType<T> type;
     private final T value;
 
