@@ -230,7 +230,7 @@ public class FormatParser {
                 // Create reversed
                 final Condition<?> reversed;
                 final boolean isValue = nextToken.getType() == Token.VALUE;
-                if (isValue || nextToken.getType() == Token.VALUE) {
+                if (isValue || nextToken.getType() == Token.CONDITION) {
                     if (isValue) {
                         final String value = (String) nextToken.getValue();
                         final P provided = providerFunction.apply(value);
