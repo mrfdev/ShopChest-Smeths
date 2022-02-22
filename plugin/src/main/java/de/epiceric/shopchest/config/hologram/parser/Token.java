@@ -1,16 +1,19 @@
 package de.epiceric.shopchest.config.hologram.parser;
 
+import java.util.List;
+
 public class Token<T> {
 
     public final static TokenType<String> STRING = new TokenType<>("String");
     public final static TokenType<Double> DOUBLE = new TokenType<>("Double");
-    public final static TokenType<String> BOOLEAN = new TokenType<>("Boolean");
+    public final static TokenType<String> VALUE = new TokenType<>("Value");
     public final static TokenType<Void> BEGIN_UNIT = new TokenType<>("Begin unit");
     public final static TokenType<Void> END_UNIT = new TokenType<>("End unit");
     public final static TokenType<Void> REVERSE = new TokenType<>("Reverse");
     public final static TokenType<ConditionOperator> CONDITION_OPERATOR = new TokenType<>("Condition operator");
     public final static TokenType<LogicOperator> LOGIC_OPERATOR = new TokenType<>("Logic operator");
     public final static TokenType<CalculationOperator> CALCULATION_OPERATOR = new TokenType<>("Calculation operator");
+    public final static TokenType<List<Token<?>>> NODE = new TokenType<>("Node");
     private final TokenType<T> type;
     private final T value;
 
