@@ -1,103 +1,200 @@
 package de.epiceric.shopchest.config.hologram;
 
-import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-
+import de.epiceric.shopchest.ShopChest;
 import de.epiceric.shopchest.config.Placeholder;
+import de.epiceric.shopchest.config.hologram.condition.Condition;
+import de.epiceric.shopchest.config.hologram.line.FormatReplacer;
+import de.epiceric.shopchest.config.hologram.line.FormattedLine;
+import de.epiceric.shopchest.config.hologram.parser.FormatParser;
+import de.epiceric.shopchest.config.hologram.parser.ParserResult;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import de.epiceric.shopchest.ShopChest;
+import java.io.File;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class HologramFormat {
 
-    /*
-    TODO Change implementation of this class
-      -> Deserialize from the configuration and load it some way to avoid String manipulation at each method invocation
-       -> Rework the current String manipulation process to add complex expression evaluation WITHOUT nashorn engine
-     */
-
-    public enum Requirement {
-        VENDOR, AMOUNT, ITEM_TYPE, ITEM_NAME, HAS_ENCHANTMENT, BUY_PRICE,
-        SELL_PRICE, HAS_POTION_EFFECT, IS_MUSIC_DISC, IS_POTION_EXTENDED, IS_BANNER_PATTERN,
-        IS_WRITTEN_BOOK, ADMIN_SHOP, NORMAL_SHOP, IN_STOCK, MAX_STACK, CHEST_SPACE, DURABILITY
-    }
-
-    // no "-" sign since no variable can be negative
-    // e.g.: 100.0 >= 50.0
-    private static final Pattern SIMPLE_NUMERIC_CONDITION = Pattern.compile("^(\\d+(?:\\.\\d+)?) ([<>][=]?|[=!]=) (\\d+(?:\\.\\d+)?)$");
-
-    // e.g.: "STONE" == "DIAMOND_SWORD"
-    private static final Pattern SIMPLE_STRING_CONDITION = Pattern.compile("^\"([^\"]*)\" ([=!]=) \"([^\"]*)\"$");
-
-    private ScriptEngineManager manager = new ScriptEngineManager();
-    private ScriptEngine engine = manager.getEngineByName("JavaScript");
-
-    private ShopChest plugin;
-    private File configFile;
-    private YamlConfiguration config;
+    private final ShopChest plugin;
+    private HologramLine[] lines;
 
     public HologramFormat(ShopChest plugin) {
-        this.configFile = new File(plugin.getDataFolder(), "hologram-format.yml");
-        this.config = YamlConfiguration.loadConfiguration(configFile);
         this.plugin = plugin;
+    }
+
+    public void load() {
+        // Load file
+        final File configFile = new File(plugin.getDataFolder(), "hologram-format.yml");
+        final YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
+        // Get lines
+        final ConfigurationSection linesSection = config.getConfigurationSection("lines");
+        if (linesSection == null) {
+            // TODO Inform that there is no lines section
+            return;
+        }
+        // Get options
+        final Map<String, ConfigurationSection> optionSections = new HashMap<>();
+        for (String linesId : linesSection.getKeys(false)) {
+            final ConfigurationSection lineSection = linesSection.getConfigurationSection(linesId);
+            if (lineSection == null) {
+                // TODO Inform that a line must be a section
+                continue;
+            }
+            final ConfigurationSection optionSection = lineSection.getConfigurationSection("options");
+            if (optionSection == null) {
+                // TODO Inform that a line must contain an option section
+                continue;
+            }
+            optionSections.put(linesId, optionSection);
+        }
+
+        // Sort lines by id
+        final List<ConfigurationSection> orderedOptionSections = optionSections.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(Map.Entry::getValue)
+                .collect(Collectors.toList());
+
+        // Prepare formatter
+        final FormatData data = new FormatData();
+        final FormatParser parser = new FormatParser();
+
+        // Deserialize each option
+        final List<HologramLine> lines = new ArrayList<>();
+        // For every line
+        for (ConfigurationSection optionsSection : orderedOptionSections) {
+            final List<HologramOption> options = new LinkedList<>();
+            // For every option of the line
+            for (final String optionKey : optionsSection.getKeys(false)) {
+                final ConfigurationSection optionSection = optionsSection.getConfigurationSection(optionKey);
+                if (optionSection == null) {
+                    // TODO Inform that an 'options' key must refer to a section
+                    continue;
+                }
+                // Get the requirements
+                final List<Condition<Map<Requirement, Object>>> requirementConditions = new LinkedList<>();
+
+                for (String requirement : optionSection.getStringList("requirements")) {
+                    if (requirement == null) {
+                        continue;
+                    }
+                    final ParserResult<Requirement> result;
+                    try {
+                        result = parser.parse(
+                                requirement,
+                                data.getRequirements(),
+                                data.getRequirementsTypes()
+                        );
+                    } catch (Exception e) {
+                        // TODO Inform that it can not be deserialized
+                        continue;
+                    }
+
+                    if (result.isCondition()) {
+                        requirementConditions.add(result.getCondition());
+                        continue;
+                    }
+                    // TODO Inform that there is a requirement that is not a condition
+                }
+
+                // Get the format
+                final String format = optionSection.getString("format");
+                if (format == null) {
+                    // TODO Inform that format does not exist for this option
+                    continue;
+                }
+
+                final FormattedLine<Placeholder> formattedString = evaluateFormat(format, parser, data);
+
+                // Add the option
+                options.add(new HologramOption(
+                        formattedString,
+                        requirementConditions.isEmpty() ? Collections.emptyList() : requirementConditions
+                ));
+
+                // There is no requirement for this option, so it's the last
+                // (it will always be picked so the next options are skipped)
+                if (requirementConditions.isEmpty()) {
+                    break;
+                }
+            }
+            if (options.isEmpty()) {
+                // TODO Inform that this line does not contain any valid option
+                continue;
+            }
+
+            // Add the line
+            lines.add(new HologramLine(new ArrayList<>(options)));
+        }
+
+        this.lines = lines.toArray(new HologramLine[0]);
+    }
+
+    private FormattedLine<Placeholder> evaluateFormat(String format, FormatParser parser, FormatData data) {
+        final FormatReplacer<Placeholder> formatReplacer = new FormatReplacer<>(format);
+
+        // Detect and evaluate accolade inner parts
+        final Map<String, ParserResult<Placeholder>> parsedScripts = new HashMap<>();
+        final Matcher matcher = Pattern.compile("\\{([^}]+)}").matcher(format);
+
+        while (matcher.find()) {
+            final String withBrackets = matcher.group();
+            final String script = withBrackets.substring(1, withBrackets.length() - 1);
+
+            final ParserResult<Placeholder> result;
+            try {
+                result = parser.parse(script, data.getPlaceholders(), data.getPlaceholderTypes());
+            } catch (Exception e) {
+                // TODO Inform that the script can not be deserialized
+                parsedScripts.put(withBrackets, new ParserResult<>(null, null, null, null));
+                continue;
+            }
+            parsedScripts.put(withBrackets, result);
+        }
+
+        // Replace accolade inner parts
+        for (Map.Entry<String, ParserResult<Placeholder>> entry : parsedScripts.entrySet()) {
+            final String regex = entry.getKey();
+            final ParserResult<Placeholder> result = entry.getValue();
+            if (result.isConstant()) {
+                formatReplacer.replace(regex, String.valueOf(result.getConstant()));
+            } else if (result.isValue()) {
+                formatReplacer.replace(regex, new FormattedLine.ProviderToString<>(result.getValue()));
+            } else if (result.isCondition()) {
+                formatReplacer.replace(regex, new FormattedLine.ConditionToString<>(result.getCondition()));
+            } else if (result.isCalculation()) {
+                formatReplacer.replace(regex, new FormattedLine.CalculationToString<>(result.getCalculation()));
+            } else {
+                formatReplacer.replace(regex, "");
+            }
+        }
+
+        // Replace classics placeholders
+        for (Map.Entry<String, Placeholder> entry : data.getPlaceholders().entrySet()) {
+            formatReplacer.replace(entry.getKey(), new FormattedLine.MapToString<>(entry.getValue()));
+        }
+
+        return formatReplacer.create();
     }
 
     /**
      * Get the format for the given line of the hologram
-     * @param line Line of the hologram
+     *
+     * @param line   Line of the hologram
      * @param reqMap Values of the requirements that might be needed by the format (contains {@code null} if not comparable)
      * @param plaMap Values of the placeholders that might be needed by the format
-     * @return  The format of the first working option, or an empty String if no option is working
-     *          because of not fulfilled requirements
+     * @return The format of the first working option, or an empty String if no option is working
+     * because of not fulfilled requirements
      */
     public String getFormat(int line, Map<Requirement, Object> reqMap, Map<Placeholder, Object> plaMap) {
-        ConfigurationSection options = config.getConfigurationSection("lines." + line + ".options");
-
-        // For every option
-        optionLoop:
-        for (String key : options.getKeys(false)) {
-            ConfigurationSection option = options.getConfigurationSection(key);
-            List<String> requirements = option.getStringList("requirements");
-
-            // Check every requirement
-            for (String sReq : requirements) {
-                //TODO Maybe remove some loops as every requirements are re evaluated in the #evalRequirement
-                for (Requirement req : reqMap.keySet()) {
-                    // If the configuration requirement contain a requirement specified by the shop
-                    if (sReq.contains(req.toString())) {
-                        // Then evaluate the requirement.
-                        // If the requirement is not fulfilled, skip this option and go to the next one
-                        if (!evalRequirement(sReq, reqMap)) {
-                            continue optionLoop;
-                        }
-                        // TODO Maybe skip to the next config requirement as the requirement has been found and is valid
-                    }
-                }
-            }
-
-            // Here, every requirement is fulfilled and this is the first valid option
-
-            String format = option.getString("format");
-
-            // Evaluate placeholders and return the formatted line
-            return evalPlaceholder(format, plaMap);
-        }
-
-        // No option matching to que shop requirements
-        // Returning an empty string
-        return "";
+        return lines[line].get(reqMap, plaMap);
     }
 
     public void reload() {
-        config = YamlConfiguration.loadConfiguration(configFile);
+        lines = null;
+        load();
     }
 
     /**
@@ -107,6 +204,8 @@ public class HologramFormat {
         // Return whether an option contains STOCK or CHEST_SPACE :
         // - In the format
         // - In one of its requirement
+        // TODO Implement this
+        /*
         int count = getLineCount();
         for (int i = 0; i < count; i++) {
             ConfigurationSection options = config.getConfigurationSection("lines." + i + ".options");
@@ -126,7 +225,7 @@ public class HologramFormat {
                 }
             }
         }
-
+        */
         return false;
     }
 
@@ -134,138 +233,25 @@ public class HologramFormat {
      * @return Amount of lines in a hologram
      */
     public int getLineCount() {
-        return config.getConfigurationSection("lines").getKeys(false).size();
+        if (lines == null) {
+            throw new IllegalStateException("The hologram format is loaded");
+        }
+        return lines.length;
     }
 
     /**
      * @return Configuration of the "hologram-format.yml" file
+     * @deprecated The configuration is not used during runtime.
+     * If you invoke this method, you will load the configuration from the disk.
      */
+    @Deprecated
     public YamlConfiguration getConfig() {
-        return config;
+        return YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "hologram-format.yml"));
     }
 
-    /**
-     * Parse and evaluate a condition
-     * @param condition Condition to evaluate
-     * @param values Values of the requirements
-     * @return Result of the condition
-     */
-    public boolean evalRequirement(String condition, Map<Requirement, Object> values) {
-        String cond = condition;
-
-        // Double-check the presence of a requirement (WTF ?)
-        for (HologramFormat.Requirement req : HologramFormat.Requirement.values()) {
-            if (cond.contains(req.toString()) && values.containsKey(req)) {
-                Object val = values.get(req);
-                String sVal = String.valueOf(val);
-
-                if (val instanceof String && !(sVal.startsWith("\"") && sVal.endsWith("\""))) {
-                    sVal = String.format("\"%s\"", sVal);
-                }
-
-                cond = cond.replace(req.toString(), sVal);
-            }
-        }
-
-        // Evaluate three basic condition : Direct Boolean, Math comparison and String equality
-
-        if (cond.equals("true")) {
-            // e.g.: ADMIN_SHOP
-            return true;
-        } else if (cond.equals("false")) {
-            return false;
-        } else {
-            char firstChar = cond.charAt(0);
-
-            // numeric cond: first char must be a digit (no variable can be negative)
-            if (firstChar >= '0' && firstChar <= '9') {
-                Matcher matcher = SIMPLE_NUMERIC_CONDITION.matcher(cond);
-
-                if (matcher.find()) {
-                    double a, b;
-                    Operator operator;
-                    try {
-                        a = Double.parseDouble(matcher.group(1));
-                        operator = Operator.from(matcher.group(2));
-                        b = Double.parseDouble(matcher.group(3));
-
-                        return operator.compare(a, b);
-                    } catch (IllegalArgumentException ignored) {
-                        // should not happen, since regex checked that there is valid number and valid operator
-                    }
-                }
-            }
-
-            // string cond: first char must be a: "
-            if (firstChar == '"') {
-                Matcher matcher = SIMPLE_STRING_CONDITION.matcher(cond);
-
-                if (matcher.find()) {
-                    String a, b;
-                    Operator operator;
-                    try {
-                        a = matcher.group(1);
-                        operator = Operator.from(matcher.group(2));
-                        b = matcher.group(3);
-
-                        return operator.compare(a, b);
-                    } catch (IllegalArgumentException | UnsupportedOperationException ignored) {
-                        // should not happen, since regex checked that there is valid operator
-                    }
-                }
-            }
-
-            // complex comparison
-            // Like && and || or other arithmetic operations
-            try {
-                return (boolean) engine.eval(cond);
-            } catch (ScriptException e) {
-                plugin.debug("Failed to eval condition: " + condition);
-                plugin.debug(e);
-                return false;
-            }
-        }
-    }
-
-    /**
-     * Parse and evaluate a condition
-     * @param string Message or hologram format whose containing scripts to execute
-     * @param values Values of the placeholders
-     * @return Result of the condition
-     */
-    public String evalPlaceholder(String string, Map<Placeholder, Object> values) {
-        // Detect and evaluate accolade inner parts
-        try {
-            Matcher matcher = Pattern.compile("\\{([^}]+)}").matcher(string);
-            String newString = string;
-
-            while (matcher.find()) {
-                String withBrackets = matcher.group();
-                String script = withBrackets.substring(1, withBrackets.length() - 1);
-
-                for (Placeholder placeholder : values.keySet()) {
-                    if (script.contains(placeholder.toString())) {
-                        Object val = values.get(placeholder);
-                        String sVal = String.valueOf(val);
-
-                        if (val instanceof String && !(sVal.startsWith("\"") && sVal.endsWith("\""))) {
-                            sVal = String.format("\"%s\"", sVal);
-                        }
-
-                        script = script.replace(placeholder.toString(), sVal);
-                    }
-                }
-
-                String result = String.valueOf(engine.eval(script));
-                newString = newString.replace(withBrackets, result);
-            }
-
-            return newString;
-        } catch (ScriptException e) {
-            plugin.debug("Failed to eval placeholder script in string: " + string);
-            plugin.debug(e);
-        }
-
-        return string;
+    public enum Requirement {
+        VENDOR, AMOUNT, ITEM_TYPE, ITEM_NAME, HAS_ENCHANTMENT, BUY_PRICE,
+        SELL_PRICE, HAS_POTION_EFFECT, IS_MUSIC_DISC, IS_POTION_EXTENDED, IS_BANNER_PATTERN,
+        IS_WRITTEN_BOOK, ADMIN_SHOP, NORMAL_SHOP, IN_STOCK, MAX_STACK, CHEST_SPACE, DURABILITY
     }
 }

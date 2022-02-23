@@ -19,6 +19,7 @@ public class Token<T> {
     public final static TokenType<List<Token<?>>> NODE = new TokenType<>("Node");
     public final static TokenType<Calculation<?>> CALCULATION = new TokenType<>("Calculation");
     public final static TokenType<Condition<?>> CONDITION = new TokenType<>("Condition");
+
     private final TokenType<T> type;
     private final T value;
 
