@@ -226,6 +226,7 @@ public class ShopChest extends JavaPlugin {
         }
 
         hologramFormat = new HologramFormat(this);
+        hologramFormat.load();
         shopCommand = new ShopCommand(this);
         shopCreationThreadPool = new ThreadPoolExecutor(0, 8,
                 5L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());

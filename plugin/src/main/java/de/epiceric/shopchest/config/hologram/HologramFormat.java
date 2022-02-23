@@ -234,7 +234,7 @@ public class HologramFormat {
      */
     public int getLineCount() {
         if (lines == null) {
-            throw new IllegalStateException("The hologram format is loaded");
+            throw new IllegalStateException("The hologram format is not loaded");
         }
         return lines.length;
     }
