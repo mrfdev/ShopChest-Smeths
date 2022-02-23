@@ -1,8 +1,10 @@
 package de.epiceric.shopchest.config.hologram.parser;
 
+import de.epiceric.shopchest.config.hologram.calculation.Calculation;
 import de.epiceric.shopchest.config.hologram.condition.Condition;
 import de.epiceric.shopchest.config.hologram.condition.ProviderCondition;
 import de.epiceric.shopchest.config.hologram.condition.ReverseCondition;
+import de.epiceric.shopchest.config.hologram.provider.ConstantProvider;
 import de.epiceric.shopchest.config.hologram.provider.MapProvider;
 
 import java.util.*;
@@ -193,9 +195,13 @@ public class FormatParser {
     }
 
     @SuppressWarnings("unchecked")
+    private <T> T cast(Object o) {
+        return (T) o;
+    }
+
     private Token<List<Token<?>>> getTypedNoteToken(Token<?> token) {
         if (token.getType() == Token.NODE) {
-            return (Token<List<Token<?>>>) token;
+            return cast(token);
         }
         return null;
     }
@@ -271,7 +277,93 @@ public class FormatParser {
             reverseChain = reverseChain.getAfter();
         }
 
+        // Calculation
+        Chain<Token<?>> calculationChain = tokensChain;
+        while (calculationChain != null) {
+            final Token<?> token = calculationChain.getValue();
+            // Operator check
+            if (token.getType() == Token.CALCULATION_OPERATOR) {
+                final Chain<Token<?>> previousChain = calculationChain.getBefore();
+                final Chain<Token<?>> nextChain = calculationChain.getAfter();
+                // First member does not exist
+                if (previousChain == null) {
+                    throw new RuntimeException("Try to apply a calculation operator without first member");
+                }
+                // Second member does not exist
+                if (nextChain == null) {
+                    throw new RuntimeException("Try to apply a calculation operator without second member");
+                }
+                final Function<P, Double> previousProvider = checkNumeric(previousChain, providerFunction, providerTypes);
+                final Function<P, Double> nextProvider = checkNumeric(nextChain, providerFunction, providerTypes);
+
+                // Create the calculation
+                final Calculation<P> calculation;
+                final Token.CalculationOperator operator = (Token.CalculationOperator) token.getValue();
+                switch (operator) {
+                    case ADDITION:
+                        calculation = new Calculation.Addition<>(previousProvider, nextProvider);
+                        break;
+                    case SUBTRACTION:
+                        calculation = new Calculation.Subtraction<>(previousProvider, nextProvider);
+                        break;
+                    case MULTIPLICATION:
+                        calculation = new Calculation.Multiplication<>(previousProvider, nextProvider);
+                        break;
+                    case DIVISION:
+                        calculation = new Calculation.Division<>(previousProvider, nextProvider);
+                        break;
+                    case MODULO:
+                        calculation = new Calculation.Modulo<>(previousProvider, nextProvider);
+                        break;
+                    default:
+                        throw new RuntimeException("Can not figure out what is the calculation operator");
+                }
+
+                // Set the chain
+                final Chain<Token<?>> afterCalculationChain = nextChain.getAfter();
+                previousChain.setValue(new Token<>(Token.CALCULATION, calculation));
+                if (afterCalculationChain != null) {
+                    afterCalculationChain.setBefore(previousChain);
+                    previousChain.setAfter(afterCalculationChain);
+                } else {
+                    previousChain.setAfter(null);
+                }
+            }
+            calculationChain = calculationChain.getAfter();
+        }
+
         return tokensChain == null ? null : tokensChain.getValue();
+    }
+
+    private <P> Function<P, Double> checkNumeric(
+            Chain<Token<?>> chain,
+            Function<String, P> providerFunction,
+            Map<P, Class<?>> providerTypes
+    ) {
+        final Token<?> token = chain.getValue();
+        if (token.getType() == Token.VALUE) {
+            final String value = (String) token.getValue();
+            final P provided = providerFunction.apply(value);
+            // It uses a valid provided value
+            if (provided != null) {
+                final Class<?> providedClass = providerTypes.get(provided);
+                // The provided value is a number
+                if (providedClass == Double.class) {
+                    // Return the provided key
+                    return cast(new MapProvider.DoubleMapProvider<>(provided));
+                } else {
+                    throw new RuntimeException("'" + value + "' can not be used as a number");
+                }
+            } else {
+                throw new RuntimeException("'" + value + "' does not exist");
+            }
+        } else if (token.getType() == Token.CALCULATION) {
+            return cast(token.getValue());
+        } else if (token.getType() == Token.DOUBLE) {
+            return new ConstantProvider<>((Double) token.getValue());
+        }
+
+        throw new RuntimeException("Try to apply calculation operator on something that does not represent a number");
     }
 
 }

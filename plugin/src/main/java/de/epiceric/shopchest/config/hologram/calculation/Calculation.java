@@ -6,9 +6,10 @@ import java.util.function.Function;
 /**
  * Represents a hologram calculation
  */
-public interface Calculation<P> {
+@FunctionalInterface
+public interface Calculation<P> extends Function<P, Double> {
 
-    double calculate(P provider);
+    Double apply(P provider);
 
     abstract class AbstractCalculation<P> implements Calculation<P> {
 
@@ -48,7 +49,7 @@ public interface Calculation<P> {
         }
 
         @Override
-        public double calculate(P values) {
+        public Double apply(P values) {
             return this.firstArgProvider.apply(values) + secondArgProvider.apply(values);
         }
 
@@ -68,7 +69,7 @@ public interface Calculation<P> {
         }
 
         @Override
-        public double calculate(P values) {
+        public Double apply(P values) {
             return this.firstArgProvider.apply(values) - secondArgProvider.apply(values);
         }
 
@@ -88,7 +89,7 @@ public interface Calculation<P> {
         }
 
         @Override
-        public double calculate(P values) {
+        public Double apply(P values) {
             return this.firstArgProvider.apply(values) * secondArgProvider.apply(values);
         }
 
@@ -108,7 +109,7 @@ public interface Calculation<P> {
         }
 
         @Override
-        public double calculate(P values) {
+        public Double apply(P values) {
             return this.firstArgProvider.apply(values) / secondArgProvider.apply(values);
         }
 
@@ -128,7 +129,7 @@ public interface Calculation<P> {
         }
 
         @Override
-        public double calculate(P values) {
+        public Double apply(P values) {
             return this.firstArgProvider.apply(values) % secondArgProvider.apply(values);
         }
 
