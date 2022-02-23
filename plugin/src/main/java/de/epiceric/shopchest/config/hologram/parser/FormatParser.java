@@ -11,7 +11,7 @@ import java.util.function.Function;
 
 public class FormatParser {
 
-    public List<Token<?>> getTokens(String string) {
+    private List<Token<?>> getTokens(String string) {
         final List<Token<?>> tokens = new LinkedList<>();
 
         final char[] chars = string.toCharArray();
@@ -83,7 +83,7 @@ public class FormatParser {
         return new ArrayList<>(tokens);
     }
 
-    public Token<?> getToken(StringBuilder currentToken) {
+    private Token<?> getToken(StringBuilder currentToken) {
         // If it's empty, don't need to add a token
         if (currentToken.length() == 0) {
             return null;
@@ -151,7 +151,7 @@ public class FormatParser {
         return token;
     }
 
-    public List<Token<?>> createNode(Iterable<Token<?>> tokens) {
+    private List<Token<?>> createNode(Iterable<Token<?>> tokens) {
         final Iterator<Token<?>> tokenIterator = tokens.iterator();
         final Counter counter = new Counter();
         final List<Token<?>> resolvedTokens = resolveNode(tokenIterator, counter).getValue();
@@ -165,7 +165,7 @@ public class FormatParser {
         return resolvedTokens;
     }
 
-    public Token<List<Token<?>>> resolveNode(Iterator<Token<?>> tokens, Counter counter) {
+    private Token<List<Token<?>>> resolveNode(Iterator<Token<?>> tokens, Counter counter) {
         final List<Token<?>> nodeTokens = new LinkedList<>();
         while (tokens.hasNext()) {
             final Token<?> token = tokens.next();
@@ -213,7 +213,7 @@ public class FormatParser {
         return null;
     }
 
-    public <P> Token<?> createFunctions(Iterable<Token<?>> tokens, Function<String, P> providerFunction, Map<P, Class<?>> providerTypes) {
+    private <P> Token<?> createFunctions(Iterable<Token<?>> tokens, Function<String, P> providerFunction, Map<P, Class<?>> providerTypes) {
         Chain<Token<?>> tokensChain = Chain.getChain(tokens);
         if (tokensChain == null) {
             return null;
@@ -658,7 +658,7 @@ public class FormatParser {
             // It uses a valid provided value
             if (provided != null) {
                 final Class<?> providedClass = providerTypes.get(provided);
-                // The provided value is a number
+                // The provided value is a string
                 if (providedClass == String.class) {
                     // Return the provided key
                     return new MapProvider.StringMapProvider<>(provided);
@@ -673,6 +673,77 @@ public class FormatParser {
         }
 
         return null;
+    }
+
+    public <P> ParserResult<P> parse(String input, Function<String, P> providerFunction, Map<P, Class<?>> providerTypes) {
+        final List<Token<?>> tokens = getTokens(input);
+        final List<Token<?>> tokenNode = createNode(tokens);
+        final Token<?> token = createFunctions(tokenNode, providerFunction, providerTypes);
+
+        if (token == null) {
+            return new ParserResult<>(null, null, null, null);
+        }
+
+        // Constant check
+        if (token.getType() == Token.VALUE) {
+            final String value = (String) token.getValue();
+            final P provided = providerFunction.apply(value);
+            // It uses a valid provided value
+            if (provided != null) {
+                final Class<?> providedClass = providerTypes.get(provided);
+                // The provided value is a number
+                if (providedClass == String.class) {
+                    // Return the provided key
+                    return new ParserResult<>(
+                            null,
+                            null,
+                            new MapProvider.StringMapProvider<>(provided),
+                            null
+                    );
+                }
+                if (providedClass == Boolean.class) {
+                    return new ParserResult<>(
+                            new ProviderCondition<>(new MapProvider.BooleanMapProvider<>(provided)),
+                            null,
+                            null,
+                            null
+                    );
+                }
+                if (providedClass == Double.class) {
+                    return new ParserResult<>(
+                            null,
+                            null,
+                            new MapProvider.DoubleMapProvider<>(provided),
+                            null
+                    );
+                }
+                // Normally impossible
+                throw new RuntimeException("'" + value + "' can not be used as constant, its type is not handled");
+            } else {
+                throw new RuntimeException("'" + value + "' does not exist");
+            }
+        } else if (token.getType() == Token.DOUBLE || token.getType() == Token.STRING) {
+            return new ParserResult<>(
+                    null,
+                    null,
+                    null,
+                    token.getValue()
+            );
+        } else if (token.getType() == Token.CALCULATION) {
+            return new ParserResult<>(null,
+                    cast(token.getValue()),
+                    null,
+                    null
+            );
+        } else if (token.getType() == Token.CONDITION) {
+            return new ParserResult<>(
+                    cast(token.getValue()),
+                    null,
+                    null,
+                    null
+            );
+        }
+        throw new RuntimeException("Can not figure out what is the type of the parsed input");
     }
 
 }
