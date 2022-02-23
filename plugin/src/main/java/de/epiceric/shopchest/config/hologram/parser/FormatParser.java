@@ -213,7 +213,7 @@ public class FormatParser {
         return null;
     }
 
-    private <P> Token<?> createFunctions(Iterable<Token<?>> tokens, Function<String, P> providerFunction, Map<P, Class<?>> providerTypes) {
+    private <P> Token<?> createFunctions(Iterable<Token<?>> tokens, Map<String, P> providerMap, Map<P, Class<?>> providerTypes) {
         Chain<Token<?>> tokensChain = Chain.getChain(tokens);
         if (tokensChain == null) {
             return null;
@@ -225,7 +225,7 @@ public class FormatParser {
             final Token<?> token = nodeChain.getValue();
             final Token<List<Token<?>>> typedToken = getTypedNoteToken(token);
             if (typedToken != null) {
-                nodeChain.setValue(createFunctions(typedToken.getValue(), providerFunction, providerTypes));
+                nodeChain.setValue(createFunctions(typedToken.getValue(), providerMap, providerTypes));
             }
             nodeChain = nodeChain.getAfter();
         }
@@ -245,7 +245,7 @@ public class FormatParser {
                 // Get next condition
                 final Condition<Map<P, Object>> originalCondition = checkCondition(
                         nextChain.getValue(),
-                        providerFunction,
+                        providerMap,
                         providerTypes
                 );
                 if (originalCondition == null) {
@@ -285,12 +285,20 @@ public class FormatParser {
                     throw new RuntimeException("Try to apply a calculation operator without second member");
                 }
                 // Get First member
-                final Function<Map<P, Object>, Double> previousProvider = checkNumeric(previousChain.getValue(), providerFunction, providerTypes);
+                final Function<Map<P, Object>, Double> previousProvider = checkNumeric(
+                        previousChain.getValue(),
+                        providerMap,
+                        providerTypes
+                );
                 if (previousProvider == null) {
                     throw new RuntimeException("Try to apply calculation operator on something that does not represent a number (first member)");
                 }
                 // Get second member
-                final Function<Map<P, Object>, Double> nextProvider = checkNumeric(nextChain.getValue(), providerFunction, providerTypes);
+                final Function<Map<P, Object>, Double> nextProvider = checkNumeric(
+                        nextChain.getValue(),
+                        providerMap,
+                        providerTypes
+                );
                 if (nextProvider == null) {
                     throw new RuntimeException("Try to apply calculation operator on something that does not represent a number (second member)");
                 }
@@ -375,7 +383,7 @@ public class FormatParser {
                     final Class<?> firstProviderType;
                     if (twoValues) {
                         final String value = (String) firstMemberToken.getValue();
-                        final P provided = providerFunction.apply(value);
+                        final P provided = providerMap.get(value);
                         // It uses a valid provided value
                         if (provided != null) {
                             // Create the first provider
@@ -419,7 +427,11 @@ public class FormatParser {
                     final Function<Map<P, Object>, ?> secondProvider;
                     // Boolean equality
                     if (firstProviderType == Boolean.class) {
-                        final Condition<Map<P, Object>> secondCondition = checkCondition(secondMemberToken, providerFunction, providerTypes);
+                        final Condition<Map<P, Object>> secondCondition = checkCondition(
+                                secondMemberToken,
+                                providerMap,
+                                providerTypes
+                        );
                         if (secondCondition == null) {
                             throw new RuntimeException("Try to apply a boolean equality on something that is not a condition");
                         }
@@ -427,14 +439,14 @@ public class FormatParser {
                     }
                     // Double equality
                     else if (firstProviderType == Double.class) {
-                        secondProvider = checkNumeric(secondMemberToken, providerFunction, providerTypes);
+                        secondProvider = checkNumeric(secondMemberToken, providerMap, providerTypes);
                         if (secondProvider == null) {
                             throw new RuntimeException("Try to apply a number equality on something that does not represent a number");
                         }
                     }
                     // String equality
                     else {
-                        secondProvider = checkString(secondMemberToken, providerFunction, providerTypes);
+                        secondProvider = checkString(secondMemberToken, providerMap, providerTypes);
                         if (secondProvider == null) {
                             throw new RuntimeException("Try to apply a string equality on something that is not a string");
                         }
@@ -456,12 +468,20 @@ public class FormatParser {
                     // Relative check (Double)
 
                     // Get First member
-                    final Function<Map<P, Object>, Double> previousProvider = checkNumeric(previousChain.getValue(), providerFunction, providerTypes);
+                    final Function<Map<P, Object>, Double> previousProvider = checkNumeric(
+                            previousChain.getValue(),
+                            providerMap,
+                            providerTypes
+                    );
                     if (previousProvider == null) {
                         throw new RuntimeException("Try to apply relative condition operator on something that does not represent a number (first member)");
                     }
                     // Get second member
-                    final Function<Map<P, Object>, Double> nextProvider = checkNumeric(nextChain.getValue(), providerFunction, providerTypes);
+                    final Function<Map<P, Object>, Double> nextProvider = checkNumeric(
+                            nextChain.getValue(),
+                            providerMap,
+                            providerTypes
+                    );
                     if (nextProvider == null) {
                         throw new RuntimeException("Try to apply relative condition operator on something that does not represent a number (second member)");
                     }
@@ -516,12 +536,20 @@ public class FormatParser {
                     throw new RuntimeException("Try to apply a logic operator without second member");
                 }
                 // Get First member
-                final Condition<Map<P, Object>> previousCondition = checkCondition(previousChain.getValue(), providerFunction, providerTypes);
+                final Condition<Map<P, Object>> previousCondition = checkCondition(
+                        previousChain.getValue(),
+                        providerMap,
+                        providerTypes
+                );
                 if (previousCondition == null) {
                     throw new RuntimeException("Try to apply logic operator on something that does not represent a number (first member)");
                 }
                 // Get second member
-                final Condition<Map<P, Object>> nextCondition = checkCondition(nextChain.getValue(), providerFunction, providerTypes);
+                final Condition<Map<P, Object>> nextCondition = checkCondition(
+                        nextChain.getValue(),
+                        providerMap,
+                        providerTypes
+                );
                 if (nextCondition == null) {
                     throw new RuntimeException("Try to apply logic operator on something that does not represent a number (second member)");
                 }
@@ -563,21 +591,21 @@ public class FormatParser {
     /**
      * Get the condition of this chain
      *
-     * @param token            The {@link Token} that need to be analyzed
-     * @param providerFunction The mapping function to associate a value to his provider key
-     * @param providerTypes    The types of the provider keys
-     * @param <P>              The provider type
+     * @param token         The {@link Token} that need to be analyzed
+     * @param providerMap   The mapping function to associate a value to his provider key
+     * @param providerTypes The types of the provider keys
+     * @param <P>           The provider type
      * @return A {@link Condition} contained in this {@link Chain}. {@code null} if it's not a condition.
      */
     private <P> Condition<Map<P, Object>> checkCondition(
             Token<?> token,
-            Function<String, P> providerFunction,
+            Map<String, P> providerMap,
             Map<P, Class<?>> providerTypes
     ) {
         // Check if it's boolean value
         if (token.getType() == Token.VALUE) {
             final String value = (String) token.getValue();
-            final P provided = providerFunction.apply(value);
+            final P provided = providerMap.get(value);
             // It uses a valid provided value
             if (provided != null) {
                 final Class<?> providedClass = providerTypes.get(provided);
@@ -602,20 +630,20 @@ public class FormatParser {
     /**
      * Get the number or calculation of this chain
      *
-     * @param token            The {@link Token} that need to be analyzed
-     * @param providerFunction The mapping function to associate a value to his provider key
-     * @param providerTypes    The types of the provider keys
-     * @param <P>              The provider type
+     * @param token         The {@link Token} that need to be analyzed
+     * @param providerMap   The mapping function to associate a value to his provider key
+     * @param providerTypes The types of the provider keys
+     * @param <P>           The provider type
      * @return A {@link Function} that generate a {@link Double} contained in this {@link Chain}. {@code null} if it's not a {@link Function} that generate a {@link Double}.
      */
     private <P> Function<Map<P, Object>, Double> checkNumeric(
             Token<?> token,
-            Function<String, P> providerFunction,
+            Map<String, P> providerMap,
             Map<P, Class<?>> providerTypes
     ) {
         if (token.getType() == Token.VALUE) {
             final String value = (String) token.getValue();
-            final P provided = providerFunction.apply(value);
+            final P provided = providerMap.get(value);
             // It uses a valid provided value
             if (provided != null) {
                 final Class<?> providedClass = providerTypes.get(provided);
@@ -641,20 +669,20 @@ public class FormatParser {
     /**
      * Get the {@link String} of this chain
      *
-     * @param token            The {@link Token} that need to be analyzed
-     * @param providerFunction The mapping function to associate a value to his provider key
-     * @param providerTypes    The types of the provider keys
-     * @param <P>              The provider type
+     * @param token         The {@link Token} that need to be analyzed
+     * @param providerMap   The mapping function to associate a value to his provider key
+     * @param providerTypes The types of the provider keys
+     * @param <P>           The provider type
      * @return A {@link Function} that generate a {@link String} contained in this {@link Chain}. {@code null} if it's not a {@link Function} that generate a {@link String}.
      */
     private <P> Function<Map<P, Object>, String> checkString(
             Token<?> token,
-            Function<String, P> providerFunction,
+            Map<String, P> providerMap,
             Map<P, Class<?>> providerTypes
     ) {
         if (token.getType() == Token.VALUE) {
             final String value = (String) token.getValue();
-            final P provided = providerFunction.apply(value);
+            final P provided = providerMap.get(value);
             // It uses a valid provided value
             if (provided != null) {
                 final Class<?> providedClass = providerTypes.get(provided);
@@ -675,10 +703,10 @@ public class FormatParser {
         return null;
     }
 
-    public <P> ParserResult<P> parse(String input, Function<String, P> providerFunction, Map<P, Class<?>> providerTypes) {
+    public <P> ParserResult<P> parse(String input, Map<String, P> providerMap, Map<P, Class<?>> providerTypes) {
         final List<Token<?>> tokens = getTokens(input);
         final List<Token<?>> tokenNode = createNode(tokens);
-        final Token<?> token = createFunctions(tokenNode, providerFunction, providerTypes);
+        final Token<?> token = createFunctions(tokenNode, providerMap, providerTypes);
 
         if (token == null) {
             return new ParserResult<>(null, null, null, null);
@@ -687,7 +715,7 @@ public class FormatParser {
         // Constant check
         if (token.getType() == Token.VALUE) {
             final String value = (String) token.getValue();
-            final P provided = providerFunction.apply(value);
+            final P provided = providerMap.get(value);
             // It uses a valid provided value
             if (provided != null) {
                 final Class<?> providedClass = providerTypes.get(provided);
