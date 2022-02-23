@@ -215,6 +215,9 @@ public class FormatParser {
 
     public <P> Token<?> createFunctions(Iterable<Token<?>> tokens, Function<String, P> providerFunction, Map<P, Class<?>> providerTypes) {
         Chain<Token<?>> tokensChain = Chain.getChain(tokens);
+        if (tokensChain == null) {
+            return null;
+        }
 
         // Node
         Chain<Token<?>> nodeChain = tokensChain;
@@ -496,7 +499,65 @@ public class FormatParser {
             equalityChain = equalityChain.getAfter();
         }
 
-        return tokensChain == null ? null : tokensChain.getValue();
+        // Logic operator
+        Chain<Token<?>> logicChain = tokensChain;
+        while (logicChain != null) {
+            final Token<?> token = logicChain.getValue();
+            // Operator check
+            if (token.getType() == Token.LOGIC_OPERATOR) {
+                final Chain<Token<?>> previousChain = logicChain.getBefore();
+                final Chain<Token<?>> nextChain = logicChain.getAfter();
+                // First member does not exist
+                if (previousChain == null) {
+                    throw new RuntimeException("Try to apply a logic operator without first member");
+                }
+                // Second member does not exist
+                if (nextChain == null) {
+                    throw new RuntimeException("Try to apply a logic operator without second member");
+                }
+                // Get First member
+                final Condition<Map<P, Object>> previousCondition = checkCondition(previousChain.getValue(), providerFunction, providerTypes);
+                if (previousCondition == null) {
+                    throw new RuntimeException("Try to apply logic operator on something that does not represent a number (first member)");
+                }
+                // Get second member
+                final Condition<Map<P, Object>> nextCondition = checkCondition(nextChain.getValue(), providerFunction, providerTypes);
+                if (nextCondition == null) {
+                    throw new RuntimeException("Try to apply logic operator on something that does not represent a number (second member)");
+                }
+
+                // Create the condition
+                final Condition<Map<P, Object>> condition;
+                final Token.LogicOperator operator = (Token.LogicOperator) token.getValue();
+                switch (operator) {
+                    case AND:
+                        condition = new LogicCondition.AndCondition<>(previousCondition, nextCondition);
+                        break;
+                    case OR:
+                        condition = new LogicCondition.OrCondition<>(previousCondition, nextCondition);
+                        break;
+                    default:
+                        throw new RuntimeException("Can not figure out what is the logic operator");
+                }
+
+                // Set the chain
+                final Chain<Token<?>> afterConditionChain = nextChain.getAfter();
+                previousChain.setValue(new Token<>(Token.CONDITION, condition));
+                if (afterConditionChain != null) {
+                    afterConditionChain.setBefore(previousChain);
+                    previousChain.setAfter(afterConditionChain);
+                } else {
+                    previousChain.setAfter(null);
+                }
+            }
+            logicChain = logicChain.getAfter();
+        }
+
+        if (tokensChain.getAfter() != null) {
+            throw new RuntimeException("Error when creating function. There is a part that is ignored because it is not linked to the first part");
+        }
+
+        return tokensChain.getValue();
     }
 
     /**
