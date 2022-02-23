@@ -194,6 +194,14 @@ public class FormatParser {
         return new Token<>(Token.NODE, nodeTokens);
     }
 
+    /**
+     * Cast basically everything.
+     * It's used to cast tokens that contain generic types (e.g. Node or Condition).
+     *
+     * @param o   A generic {@link Object} to cast
+     * @param <T> The return type
+     * @return The same {@link Object}, without the 'unchecked' warning
+     */
     @SuppressWarnings("unchecked")
     private <T> T cast(Object o) {
         return (T) o;
@@ -231,37 +239,18 @@ public class FormatParser {
                     // TODO Create custom exceptions
                     throw new RuntimeException("Try to reverse a condition that does not exist");
                 }
-                final Token<?> nextToken = nextChain.getValue();
 
-                // Create reversed
-                final Condition<?> reversed;
-                final boolean isValue = nextToken.getType() == Token.VALUE;
-                if (isValue || nextToken.getType() == Token.CONDITION) {
-                    if (isValue) {
-                        final String value = (String) nextToken.getValue();
-                        final P provided = providerFunction.apply(value);
-                        // It uses a valid provided value
-                        if (provided != null) {
-                            final Class<?> providedClass = providerTypes.get(provided);
-                            // The provided value is a boolean
-                            if (providedClass == Boolean.class) {
-                                reversed = new ReverseCondition<>(new ProviderCondition<>(
-                                        new MapProvider.BooleanMapProvider<>(provided)
-                                ));
-                            } else {
-                                throw new RuntimeException("'" + value + "' can not be used as a boolean");
-                            }
-                        } else {
-                            throw new RuntimeException("'" + value + "' does not exist");
-                        }
-                    }
-                    // It's a condition
-                    else {
-                        reversed = new ReverseCondition<>((Condition<?>) nextToken.getValue());
-                    }
-                } else {
+                // Get next condition
+                final Condition<Map<P, Object>> originalCondition = checkCondition(
+                        nextChain,
+                        providerFunction,
+                        providerTypes
+                );
+                if (originalCondition == null) {
                     throw new RuntimeException("Try to reverse something that does not represent a condition");
                 }
+
+                final ReverseCondition<Map<P, Object>> reversed = new ReverseCondition<>(originalCondition);
 
                 // Set the chain
                 final Chain<Token<?>> afterConditionChain = nextChain.getAfter();
@@ -293,11 +282,19 @@ public class FormatParser {
                 if (nextChain == null) {
                     throw new RuntimeException("Try to apply a calculation operator without second member");
                 }
-                final Function<P, Double> previousProvider = checkNumeric(previousChain, providerFunction, providerTypes);
-                final Function<P, Double> nextProvider = checkNumeric(nextChain, providerFunction, providerTypes);
+                // Get First member
+                final Function<Map<P, Object>, Double> previousProvider = checkNumeric(previousChain, providerFunction, providerTypes);
+                if (previousProvider == null) {
+                    throw new RuntimeException("Try to apply calculation operator on something that does not represent a number (first member)");
+                }
+                // Get second member
+                final Function<Map<P, Object>, Double> nextProvider = checkNumeric(nextChain, providerFunction, providerTypes);
+                if (nextProvider == null) {
+                    throw new RuntimeException("Try to apply calculation operator on something that does not represent a number (second member)");
+                }
 
                 // Create the calculation
-                final Calculation<P> calculation;
+                final Calculation<Map<P, Object>> calculation;
                 final Token.CalculationOperator operator = (Token.CalculationOperator) token.getValue();
                 switch (operator) {
                     case ADDITION:
@@ -332,10 +329,62 @@ public class FormatParser {
             calculationChain = calculationChain.getAfter();
         }
 
+        // Equality check
+
         return tokensChain == null ? null : tokensChain.getValue();
     }
 
-    private <P> Function<P, Double> checkNumeric(
+    /**
+     * Get the condition of this chain
+     *
+     * @param chain            The {@link Chain} that need to be analyzed
+     * @param providerFunction The mapping function to associate a value to his provider key
+     * @param providerTypes    The types of the provider keys
+     * @param <P>              The provider type
+     * @return A {@link Condition} contained in this {@link Chain}. {@code null} if it's not a condition.
+     */
+    private <P> Condition<Map<P, Object>> checkCondition(
+            Chain<Token<?>> chain,
+            Function<String, P> providerFunction,
+            Map<P, Class<?>> providerTypes
+    ) {
+        final Token<?> token = chain.getValue();
+
+        // Check if it's boolean value
+        if (token.getType() == Token.VALUE) {
+            final String value = (String) token.getValue();
+            final P provided = providerFunction.apply(value);
+            // It uses a valid provided value
+            if (provided != null) {
+                final Class<?> providedClass = providerTypes.get(provided);
+                // The provided value is a boolean
+                if (providedClass == Boolean.class) {
+                    return new ProviderCondition<>(
+                            new MapProvider.BooleanMapProvider<>(provided)
+                    );
+                } else {
+                    throw new RuntimeException("'" + value + "' can not be used as a boolean");
+                }
+            } else {
+                throw new RuntimeException("'" + value + "' does not exist");
+            }
+        } else if (token.getType() == Token.CONDITION) {
+            // Check if condition and extract it
+            return cast(token.getValue());
+        }
+        return null;
+    }
+
+    /**
+     * Get the number or calculation of this chain
+     *
+     * @param chain            The {@link Chain} that need to be analyzed
+     * @param providerFunction The mapping function to associate a value to his provider key
+     * @param providerTypes    The types of the provider keys
+     * @param <P>              The provider type
+     * @return A {@link Function} that generate a {@link Double} contained in this {@link Chain}. {@code null} if it's not a {@link Function} that generate a {@link Double}.
+     */
+    private <P> Function<Map<P, Object>, Double> checkNumeric(
             Chain<Token<?>> chain,
             Function<String, P> providerFunction,
             Map<P, Class<?>> providerTypes
@@ -350,7 +399,7 @@ public class FormatParser {
                 // The provided value is a number
                 if (providedClass == Double.class) {
                     // Return the provided key
-                    return cast(new MapProvider.DoubleMapProvider<>(provided));
+                    return new MapProvider.DoubleMapProvider<>(provided);
                 } else {
                     throw new RuntimeException("'" + value + "' can not be used as a number");
                 }
@@ -363,7 +412,45 @@ public class FormatParser {
             return new ConstantProvider<>((Double) token.getValue());
         }
 
-        throw new RuntimeException("Try to apply calculation operator on something that does not represent a number");
+        return null;
+    }
+
+    /**
+     * Get the {@link String} of this chain
+     *
+     * @param chain            The {@link Chain} that need to be analyzed
+     * @param providerFunction The mapping function to associate a value to his provider key
+     * @param providerTypes    The types of the provider keys
+     * @param <P>              The provider type
+     * @return A {@link Function} that generate a {@link String} contained in this {@link Chain}. {@code null} if it's not a {@link Function} that generate a {@link String}.
+     */
+    private <P> Function<Map<P, Object>, String> checkString(
+            Chain<Token<?>> chain,
+            Function<String, P> providerFunction,
+            Map<P, Class<?>> providerTypes
+    ) {
+        final Token<?> token = chain.getValue();
+        if (token.getType() == Token.VALUE) {
+            final String value = (String) token.getValue();
+            final P provided = providerFunction.apply(value);
+            // It uses a valid provided value
+            if (provided != null) {
+                final Class<?> providedClass = providerTypes.get(provided);
+                // The provided value is a number
+                if (providedClass == String.class) {
+                    // Return the provided key
+                    return new MapProvider.StringMapProvider<>(provided);
+                } else {
+                    throw new RuntimeException("'" + value + "' can not be used as a string");
+                }
+            } else {
+                throw new RuntimeException("'" + value + "' does not exist");
+            }
+        } else if (token.getType() == Token.STRING) {
+            return new ConstantProvider<>((String) token.getValue());
+        }
+
+        return null;
     }
 
 }
