@@ -11,14 +11,16 @@ public class HologramOption {
 
     private final FormattedLine<Placeholder> formattedString;
     private final List<Condition<Map<HologramFormat.Requirement, Object>>> requirements;
+    private final boolean dynamic;
 
-    public HologramOption(FormattedLine<Placeholder> formattedString, List<Condition<Map<HologramFormat.Requirement, Object>>> requirements) {
+    public HologramOption(FormattedLine<Placeholder> formattedString, List<Condition<Map<HologramFormat.Requirement, Object>>> requirements, boolean dynamic) {
         this.formattedString = formattedString;
         this.requirements = requirements;
+        this.dynamic = dynamic;
     }
 
     public boolean isValid(Map<HologramFormat.Requirement, Object> requirementsValues) {
-        if (requirementsValues == null) {
+        if (requirements == null) {
             return true;
         }
         for (Condition<Map<HologramFormat.Requirement, Object>> condition : requirements) {
@@ -31,6 +33,10 @@ public class HologramOption {
 
     public String getFormat(Map<Placeholder, Object> placeholderValues) {
         return formattedString.get(placeholderValues);
+    }
+
+    public boolean isDynamic() {
+        return dynamic;
     }
 
 }

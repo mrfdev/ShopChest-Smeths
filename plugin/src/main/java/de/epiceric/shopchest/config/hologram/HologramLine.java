@@ -14,12 +14,31 @@ public class HologramLine {
     }
 
     public final String get(Map<HologramFormat.Requirement, Object> reqMap, Map<Placeholder, Object> plaMap) {
+        final HologramOption option = getOption(reqMap);
+        return option == null ? "" : option.getFormat(plaMap);
+    }
+
+    public final boolean isDynamic() {
         for (HologramOption option : options) {
-            if (option.isValid(reqMap)) {
-                return option.getFormat(plaMap);
+            if (option.isDynamic()) {
+                return true;
             }
         }
-        return "";
+        return false;
+    }
+
+    public final boolean isDynamic(Map<HologramFormat.Requirement, Object> reqMap) {
+        final HologramOption option = getOption(reqMap);
+        return option != null && option.isDynamic();
+    }
+
+    private HologramOption getOption(Map<HologramFormat.Requirement, Object> reqMap) {
+        for (HologramOption option : options) {
+            if (option.isValid(reqMap)) {
+                return option;
+            }
+        }
+        return null;
     }
 
 }

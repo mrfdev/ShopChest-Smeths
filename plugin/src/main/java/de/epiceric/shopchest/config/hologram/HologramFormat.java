@@ -76,6 +76,7 @@ public class HologramFormat {
                 // Get the requirements
                 final List<Condition<Map<Requirement, Object>>> requirementConditions = new LinkedList<>();
 
+                boolean dynamic = false;
                 for (String requirement : optionSection.getStringList("requirements")) {
                     if (requirement == null) {
                         continue;
@@ -92,8 +93,12 @@ public class HologramFormat {
                         continue;
                     }
 
+                    // If it's a condition, add a condition requirement and check if it's dynamic
                     if (result.isCondition()) {
                         requirementConditions.add(result.getCondition());
+                        if (!dynamic) {
+                            dynamic = isRequirementDynamic(requirement);
+                        }
                         continue;
                     }
                     // TODO Inform that there is a requirement that is not a condition
@@ -106,12 +111,17 @@ public class HologramFormat {
                     continue;
                 }
 
+                // Parse the format and check if it's dynamic
                 final FormattedLine<Placeholder> formattedString = evaluateFormat(format, parser, data);
+                if (!dynamic) {
+                    dynamic = isPlaceholderDynamic(format);
+                }
 
                 // Add the option
                 options.add(new HologramOption(
                         formattedString,
-                        requirementConditions.isEmpty() ? Collections.emptyList() : requirementConditions
+                        requirementConditions.isEmpty() ? null : requirementConditions,
+                        dynamic
                 ));
 
                 // There is no requirement for this option, so it's the last
@@ -130,6 +140,14 @@ public class HologramFormat {
         }
 
         this.lines = lines.toArray(new HologramLine[0]);
+    }
+
+    private boolean isRequirementDynamic(String requirement) {
+        return requirement.contains(Requirement.IN_STOCK.name()) || requirement.contains(Requirement.CHEST_SPACE.name());
+    }
+
+    private boolean isPlaceholderDynamic(String format) {
+        return format.contains(Placeholder.STOCK.toString()) || format.contains(Placeholder.CHEST_SPACE.toString());
     }
 
     private FormattedLine<Placeholder> evaluateFormat(String format, FormatParser parser, FormatData data) {
@@ -198,35 +216,43 @@ public class HologramFormat {
     }
 
     /**
+     * Whether a hologram can be dynamic
+     *
      * @return Whether the hologram text has to change dynamically without reloading
      */
     public boolean isDynamic() {
-        // Return whether an option contains STOCK or CHEST_SPACE :
-        // - In the format
-        // - In one of its requirement
-        // TODO Implement this
-        /*
-        int count = getLineCount();
-        for (int i = 0; i < count; i++) {
-            ConfigurationSection options = config.getConfigurationSection("lines." + i + ".options");
-
-            for (String key : options.getKeys(false)) {
-                ConfigurationSection option = options.getConfigurationSection(key);
-
-                String format = option.getString("format");
-                if (format.contains(Placeholder.STOCK.toString()) || format.contains(Placeholder.CHEST_SPACE.toString())) {
-                    return true;
-                }
-
-                for (String req : option.getStringList("requirements")) {
-                    if (req.contains(Requirement.IN_STOCK.toString()) || req.contains(Requirement.CHEST_SPACE.toString())) {
-                        return true;
-                    }
-                }
+        for (HologramLine line : lines) {
+            if (line.isDynamic()) {
+                return true;
             }
         }
-        */
         return false;
+    }
+
+    /**
+     * The dynamic state of a specific shop's hologram
+     *
+     * @param reqValues The shop values
+     * @return Whether the hologram text has to change dynamically without reloading
+     */
+    public boolean isDynamic(Map<Requirement, Object> reqValues) {
+        for (HologramLine line : lines) {
+            if (line.isDynamic(reqValues)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * The dynamic static of a line of a specific shop's hologram
+     *
+     * @param line      The line to check
+     * @param reqValues The shop values
+     * @return Whether the hologram text has to change dynamically without reloading
+     */
+    public boolean isDynamic(int line, Map<Requirement, Object> reqValues) {
+        return lines[line].isDynamic(reqValues);
     }
 
     /**
