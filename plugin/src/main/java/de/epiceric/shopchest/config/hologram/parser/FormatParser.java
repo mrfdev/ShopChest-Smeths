@@ -2,6 +2,7 @@ package de.epiceric.shopchest.config.hologram.parser;
 
 import de.epiceric.shopchest.config.hologram.calculation.Calculation;
 import de.epiceric.shopchest.config.hologram.condition.*;
+import de.epiceric.shopchest.config.hologram.exception.ParserException;
 import de.epiceric.shopchest.config.hologram.provider.ConditionProvider;
 import de.epiceric.shopchest.config.hologram.provider.ConstantProvider;
 import de.epiceric.shopchest.config.hologram.provider.MapProvider;
@@ -151,21 +152,19 @@ public class FormatParser {
         return token;
     }
 
-    private List<Token<?>> createNode(Iterable<Token<?>> tokens) {
+    private List<Token<?>> createNode(Iterable<Token<?>> tokens) throws ParserException {
         final Iterator<Token<?>> tokenIterator = tokens.iterator();
         final Counter counter = new Counter();
         final List<Token<?>> resolvedTokens = resolveNode(tokenIterator, counter).getValue();
         if (counter.get() > 0) {
-            // TODO create a custom exception
-            throw new RuntimeException("Start unit '(' without closing it");
+            throw new ParserException("Start unit '(' without closing it");
         } else if (counter.get() < 0) {
-            // TODO create a custom exception
-            throw new RuntimeException("End unit ')' without starting it");
+            throw new ParserException("End unit ')' without starting it");
         }
         return resolvedTokens;
     }
 
-    private Token<List<Token<?>>> resolveNode(Iterator<Token<?>> tokens, Counter counter) {
+    private Token<List<Token<?>>> resolveNode(Iterator<Token<?>> tokens, Counter counter) throws ParserException {
         final List<Token<?>> nodeTokens = new LinkedList<>();
         while (tokens.hasNext()) {
             final Token<?> token = tokens.next();
@@ -179,8 +178,7 @@ public class FormatParser {
             nodeTokens.add(token);
         }
         if (nodeTokens.isEmpty()) {
-            // TODO Create a custom exception
-            throw new RuntimeException("Empty unit '( )'");
+            throw new ParserException("Empty unit '( )'");
         }
         // Extract if there is useless parenthesis
         if (nodeTokens.size() == 1) {
@@ -213,7 +211,11 @@ public class FormatParser {
         return null;
     }
 
-    private <P> Token<?> createFunctions(Iterable<Token<?>> tokens, Map<String, P> providerMap, Map<P, Class<?>> providerTypes) {
+    private <P> Token<?> createFunctions(
+            Iterable<Token<?>> tokens,
+            Map<String, P> providerMap,
+            Map<P, Class<?>> providerTypes
+    ) throws ParserException {
         Chain<Token<?>> tokensChain = Chain.getChain(tokens);
         if (tokensChain == null) {
             return null;
@@ -238,8 +240,7 @@ public class FormatParser {
                 final Chain<Token<?>> nextChain = reverseChain.getAfter();
                 // Next check
                 if (nextChain == null) {
-                    // TODO Create custom exceptions
-                    throw new RuntimeException("Try to reverse a condition that does not exist");
+                    throw new ParserException("Try to reverse a condition that does not exist");
                 }
 
                 // Get next condition
@@ -249,7 +250,7 @@ public class FormatParser {
                         providerTypes
                 );
                 if (originalCondition == null) {
-                    throw new RuntimeException("Try to reverse something that does not represent a condition");
+                    throw new ParserException("Try to reverse something that does not represent a condition");
                 }
 
                 final ReverseCondition<Map<P, Object>> reversed = new ReverseCondition<>(originalCondition);
@@ -278,11 +279,11 @@ public class FormatParser {
                 final Chain<Token<?>> nextChain = calculationChain.getAfter();
                 // First member does not exist
                 if (previousChain == null) {
-                    throw new RuntimeException("Try to apply a calculation operator without first member");
+                    throw new ParserException("Try to apply a calculation operator without first member");
                 }
                 // Second member does not exist
                 if (nextChain == null) {
-                    throw new RuntimeException("Try to apply a calculation operator without second member");
+                    throw new ParserException("Try to apply a calculation operator without second member");
                 }
                 // Get First member
                 final Function<Map<P, Object>, Double> previousProvider = checkNumeric(
@@ -291,7 +292,7 @@ public class FormatParser {
                         providerTypes
                 );
                 if (previousProvider == null) {
-                    throw new RuntimeException("Try to apply calculation operator on something that does not represent a number (first member)");
+                    throw new ParserException("Try to apply calculation operator on something that does not represent a number (first member)");
                 }
                 // Get second member
                 final Function<Map<P, Object>, Double> nextProvider = checkNumeric(
@@ -300,7 +301,7 @@ public class FormatParser {
                         providerTypes
                 );
                 if (nextProvider == null) {
-                    throw new RuntimeException("Try to apply calculation operator on something that does not represent a number (second member)");
+                    throw new ParserException("Try to apply calculation operator on something that does not represent a number (second member)");
                 }
 
                 // Create the calculation
@@ -323,7 +324,7 @@ public class FormatParser {
                         calculation = new Calculation.Modulo<>(previousProvider, nextProvider);
                         break;
                     default:
-                        throw new RuntimeException("Can not figure out what is the calculation operator");
+                        throw new ParserException("Can not figure out what is the calculation operator");
                 }
 
                 // Set the chain
@@ -350,11 +351,11 @@ public class FormatParser {
                 final Chain<Token<?>> nextChain = equalityChain.getAfter();
                 // First member does not exist
                 if (previousChain == null) {
-                    throw new RuntimeException("Try to apply a condition operator without first member");
+                    throw new ParserException("Try to apply a condition operator without first member");
                 }
                 // Second member does not exist
                 if (nextChain == null) {
-                    throw new RuntimeException("Try to apply a condition operator without second member");
+                    throw new ParserException("Try to apply a condition operator without second member");
                 }
 
                 // Create the condition
@@ -398,10 +399,10 @@ public class FormatParser {
                                 firstProviderType = String.class;
                                 firstProvider = new MapProvider.StringMapProvider<>(provided);
                             } else {
-                                throw new RuntimeException("'" + value + "' is not a boolean, a double or a string");
+                                throw new ParserException("'" + value + "' is not a boolean, a double or a string");
                             }
                         } else {
-                            throw new RuntimeException("'" + value + "' does not exist");
+                            throw new ParserException("'" + value + "' does not exist");
                         }
                     } else {
                         // Create the first provider
@@ -419,7 +420,7 @@ public class FormatParser {
                             firstProviderType = String.class;
                             firstProvider = new ConstantProvider<>((String) firstMemberToken.getValue());
                         } else {
-                            throw new RuntimeException("Try to apply a condition operator on something that is not a boolean, a double or a string");
+                            throw new ParserException("Try to apply a condition operator on something that is not a boolean, a double or a string");
                         }
                     }
 
@@ -433,7 +434,7 @@ public class FormatParser {
                                 providerTypes
                         );
                         if (secondCondition == null) {
-                            throw new RuntimeException("Try to apply a boolean equality on something that is not a condition");
+                            throw new ParserException("Try to apply a boolean equality on something that is not a condition");
                         }
                         secondProvider = new ConditionProvider<>(secondCondition);
                     }
@@ -441,14 +442,14 @@ public class FormatParser {
                     else if (firstProviderType == Double.class) {
                         secondProvider = checkNumeric(secondMemberToken, providerMap, providerTypes);
                         if (secondProvider == null) {
-                            throw new RuntimeException("Try to apply a number equality on something that does not represent a number");
+                            throw new ParserException("Try to apply a number equality on something that does not represent a number");
                         }
                     }
                     // String equality
                     else {
                         secondProvider = checkString(secondMemberToken, providerMap, providerTypes);
                         if (secondProvider == null) {
-                            throw new RuntimeException("Try to apply a string equality on something that is not a string");
+                            throw new ParserException("Try to apply a string equality on something that is not a string");
                         }
                     }
 
@@ -462,7 +463,7 @@ public class FormatParser {
                             condition = new AbstractEqualityCondition.InequalityCondition<>(cast(firstProvider), cast(secondProvider));
                             break;
                         default:
-                            throw new RuntimeException("Can not figure out what is the condition operator");
+                            throw new ParserException("Can not figure out what is the condition operator");
                     }
                 } else {
                     // Relative check (Double)
@@ -474,7 +475,7 @@ public class FormatParser {
                             providerTypes
                     );
                     if (previousProvider == null) {
-                        throw new RuntimeException("Try to apply relative condition operator on something that does not represent a number (first member)");
+                        throw new ParserException("Try to apply relative condition operator on something that does not represent a number (first member)");
                     }
                     // Get second member
                     final Function<Map<P, Object>, Double> nextProvider = checkNumeric(
@@ -483,7 +484,7 @@ public class FormatParser {
                             providerTypes
                     );
                     if (nextProvider == null) {
-                        throw new RuntimeException("Try to apply relative condition operator on something that does not represent a number (second member)");
+                        throw new ParserException("Try to apply relative condition operator on something that does not represent a number (second member)");
                     }
 
                     // Create the relative condition
@@ -501,7 +502,7 @@ public class FormatParser {
                             condition = new ComparisonCondition.LessOrEqualCondition<>(previousProvider, nextProvider);
                             break;
                         default:
-                            throw new RuntimeException("Can not figure out what is the condition operator");
+                            throw new ParserException("Can not figure out what is the condition operator");
                     }
                 }
 
@@ -529,11 +530,11 @@ public class FormatParser {
                 final Chain<Token<?>> nextChain = logicChain.getAfter();
                 // First member does not exist
                 if (previousChain == null) {
-                    throw new RuntimeException("Try to apply a logic operator without first member");
+                    throw new ParserException("Try to apply a logic operator without first member");
                 }
                 // Second member does not exist
                 if (nextChain == null) {
-                    throw new RuntimeException("Try to apply a logic operator without second member");
+                    throw new ParserException("Try to apply a logic operator without second member");
                 }
                 // Get First member
                 final Condition<Map<P, Object>> previousCondition = checkCondition(
@@ -542,7 +543,7 @@ public class FormatParser {
                         providerTypes
                 );
                 if (previousCondition == null) {
-                    throw new RuntimeException("Try to apply logic operator on something that does not represent a number (first member)");
+                    throw new ParserException("Try to apply logic operator on something that does not represent a number (first member)");
                 }
                 // Get second member
                 final Condition<Map<P, Object>> nextCondition = checkCondition(
@@ -551,7 +552,7 @@ public class FormatParser {
                         providerTypes
                 );
                 if (nextCondition == null) {
-                    throw new RuntimeException("Try to apply logic operator on something that does not represent a number (second member)");
+                    throw new ParserException("Try to apply logic operator on something that does not represent a number (second member)");
                 }
 
                 // Create the condition
@@ -565,7 +566,7 @@ public class FormatParser {
                         condition = new LogicCondition.OrCondition<>(previousCondition, nextCondition);
                         break;
                     default:
-                        throw new RuntimeException("Can not figure out what is the logic operator");
+                        throw new ParserException("Can not figure out what is the logic operator");
                 }
 
                 // Set the chain
@@ -582,7 +583,7 @@ public class FormatParser {
         }
 
         if (tokensChain.getAfter() != null) {
-            throw new RuntimeException("Error when creating function. There is a part that is ignored because it is not linked to the first part");
+            throw new ParserException("Error when creating function. There is a part that is ignored because it is not linked to the first part");
         }
 
         return tokensChain.getValue();
@@ -601,7 +602,7 @@ public class FormatParser {
             Token<?> token,
             Map<String, P> providerMap,
             Map<P, Class<?>> providerTypes
-    ) {
+    ) throws ParserException {
         // Check if it's boolean value
         if (token.getType() == Token.VALUE) {
             final String value = (String) token.getValue();
@@ -615,10 +616,10 @@ public class FormatParser {
                             new MapProvider.BooleanMapProvider<>(provided)
                     );
                 } else {
-                    throw new RuntimeException("'" + value + "' can not be used as a boolean");
+                    throw new ParserException("'" + value + "' can not be used as a boolean");
                 }
             } else {
-                throw new RuntimeException("'" + value + "' does not exist");
+                throw new ParserException("'" + value + "' does not exist");
             }
         } else if (token.getType() == Token.CONDITION) {
             // Check if condition and extract it
@@ -640,7 +641,7 @@ public class FormatParser {
             Token<?> token,
             Map<String, P> providerMap,
             Map<P, Class<?>> providerTypes
-    ) {
+    ) throws ParserException {
         if (token.getType() == Token.VALUE) {
             final String value = (String) token.getValue();
             final P provided = providerMap.get(value);
@@ -652,10 +653,10 @@ public class FormatParser {
                     // Return the provided key
                     return new MapProvider.DoubleMapProvider<>(provided);
                 } else {
-                    throw new RuntimeException("'" + value + "' can not be used as a number");
+                    throw new ParserException("'" + value + "' can not be used as a number");
                 }
             } else {
-                throw new RuntimeException("'" + value + "' does not exist");
+                throw new ParserException("'" + value + "' does not exist");
             }
         } else if (token.getType() == Token.CALCULATION) {
             return cast(token.getValue());
@@ -679,7 +680,7 @@ public class FormatParser {
             Token<?> token,
             Map<String, P> providerMap,
             Map<P, Class<?>> providerTypes
-    ) {
+    ) throws ParserException {
         if (token.getType() == Token.VALUE) {
             final String value = (String) token.getValue();
             final P provided = providerMap.get(value);
@@ -691,10 +692,10 @@ public class FormatParser {
                     // Return the provided key
                     return new MapProvider.StringMapProvider<>(provided);
                 } else {
-                    throw new RuntimeException("'" + value + "' can not be used as a string");
+                    throw new ParserException("'" + value + "' can not be used as a string");
                 }
             } else {
-                throw new RuntimeException("'" + value + "' does not exist");
+                throw new ParserException("'" + value + "' does not exist");
             }
         } else if (token.getType() == Token.STRING) {
             return new ConstantProvider<>((String) token.getValue());
@@ -703,7 +704,7 @@ public class FormatParser {
         return null;
     }
 
-    public <P> ParserResult<P> parse(String input, Map<String, P> providerMap, Map<P, Class<?>> providerTypes) {
+    public <P> ParserResult<P> parse(String input, Map<String, P> providerMap, Map<P, Class<?>> providerTypes) throws ParserException {
         final List<Token<?>> tokens = getTokens(input);
         final List<Token<?>> tokenNode = createNode(tokens);
         final Token<?> token = createFunctions(tokenNode, providerMap, providerTypes);
@@ -746,9 +747,9 @@ public class FormatParser {
                     );
                 }
                 // Normally impossible
-                throw new RuntimeException("'" + value + "' can not be used as constant, its type is not handled");
+                throw new ParserException("'" + value + "' can not be used as constant, its type is not handled");
             } else {
-                throw new RuntimeException("'" + value + "' does not exist");
+                throw new ParserException("'" + value + "' does not exist");
             }
         } else if (token.getType() == Token.DOUBLE || token.getType() == Token.STRING) {
             return new ParserResult<>(
@@ -771,7 +772,7 @@ public class FormatParser {
                     null
             );
         }
-        throw new RuntimeException("Can not figure out what is the type of the parsed input");
+        throw new ParserException("Can not figure out what is the type of the parsed input");
     }
 
 }
