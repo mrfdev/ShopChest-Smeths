@@ -64,7 +64,7 @@ public abstract class MapProvider<P, T> implements Function<Map<P, Object>, T> {
 
         @Override
         public Double apply(Map<P, Object> values) {
-            return (Double) values.get(requirement);
+            return ((Number) values.get(requirement)).doubleValue();
         }
 
     }
