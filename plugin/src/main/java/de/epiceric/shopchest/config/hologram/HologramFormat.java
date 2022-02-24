@@ -32,7 +32,7 @@ public class HologramFormat {
         // Get lines
         final ConfigurationSection linesSection = config.getConfigurationSection("lines");
         if (linesSection == null) {
-            // TODO Inform that there is no lines section
+            plugin.debug("Can not the hologram format, there is no 'lines' section");
             return;
         }
         // Get options
@@ -40,12 +40,12 @@ public class HologramFormat {
         for (String linesId : linesSection.getKeys(false)) {
             final ConfigurationSection lineSection = linesSection.getConfigurationSection(linesId);
             if (lineSection == null) {
-                // TODO Inform that a line must be a section
+                plugin.debug("'" + linesId + "' is not a line section, skip it in hologram format");
                 continue;
             }
             final ConfigurationSection optionSection = lineSection.getConfigurationSection("options");
             if (optionSection == null) {
-                // TODO Inform that a line must contain an option section
+                plugin.debug("The line '" + linesId + "' does not contain 'options' section, skip it in hologram format");
                 continue;
             }
             optionSections.put(linesId, optionSection);
@@ -70,7 +70,7 @@ public class HologramFormat {
             for (final String optionKey : optionsSection.getKeys(false)) {
                 final ConfigurationSection optionSection = optionsSection.getConfigurationSection(optionKey);
                 if (optionSection == null) {
-                    // TODO Inform that an 'options' key must refer to a section
+                    plugin.debug("'" + optionKey + "' is not an option section, skip it in hologram format");
                     continue;
                 }
                 // Get the requirements
@@ -89,7 +89,8 @@ public class HologramFormat {
                                 data.getRequirementsTypes()
                         );
                     } catch (Exception e) {
-                        // TODO Inform that it can not be deserialized
+                        plugin.debug("Failed to parse the requirement '" + requirement + "'");
+                        plugin.debug(e);
                         continue;
                     }
 
@@ -101,13 +102,13 @@ public class HologramFormat {
                         }
                         continue;
                     }
-                    // TODO Inform that there is a requirement that is not a condition
+                    plugin.debug("The requirement '" + requirement + "' does not represent a condition");
                 }
 
                 // Get the format
                 final String format = optionSection.getString("format");
                 if (format == null) {
-                    // TODO Inform that format does not exist for this option
+                    plugin.debug("The option '" + optionKey + "' does not contains format. Skip it in hologram format");
                     continue;
                 }
 
@@ -131,7 +132,7 @@ public class HologramFormat {
                 }
             }
             if (options.isEmpty()) {
-                // TODO Inform that this line does not contain any valid option
+                plugin.debug("The line does not contain any options, skip it in hologram format");
                 continue;
             }
 
@@ -165,8 +166,9 @@ public class HologramFormat {
             try {
                 result = parser.parse(script, data.getPlaceholders(), data.getPlaceholderTypes());
             } catch (Exception e) {
-                // TODO Inform that the script can not be deserialized
                 parsedScripts.put(withBrackets, new ParserResult<>(null, null, null, null));
+                plugin.debug("Failed to evaluate the script '" + script + "'");
+                plugin.debug(e);
                 continue;
             }
             parsedScripts.put(withBrackets, result);
