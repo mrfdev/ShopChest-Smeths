@@ -104,6 +104,10 @@
             <groupId>de.epiceric</groupId>
             <artifactId>shopchest-nms-v1_18_R1</artifactId>
         </dependency>
+        <dependency>
+            <groupId>de.epiceric</groupId>
+            <artifactId>shopchest-nms-v1_18_R2</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
