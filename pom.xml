@@ -91,11 +91,6 @@
             <id>enginehub-repo</id>
             <url>https://maven.enginehub.org/repo/</url>
         </repository>
-        <!-- AreaShop repo -->
-        <repository>
-            <id>areashop-repo</id>
-            <url>http://maven.wiefferink.me</url>
-        </repository>
     </repositories>
 
     <dependencyManagement>
