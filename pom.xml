@@ -17,6 +17,7 @@
         <module>nms/v1_17_1_R1</module>
         <module>nms/v1_18_R1</module>
         <module>nms/v1_18_R2</module>
+        <module>nms/v1_19_R1</module>
     </modules>
 
     <name>ShopChest</name>
@@ -102,7 +103,7 @@
             <dependency>
                 <groupId>org.spigotmc</groupId>
                 <artifactId>spigot-api</artifactId>
-                <version>1.18.2-R0.1-SNAPSHOT</version>
+                <version>1.19-R0.1-SNAPSHOT</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -321,6 +322,11 @@
             <dependency>
                 <groupId>de.epiceric</groupId>
                 <artifactId>shopchest-nms-v1_18_R2</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>de.epiceric</groupId>
+                <artifactId>shopchest-nms-v1_19_R1</artifactId>
                 <version>1.0.0</version>
             </dependency>
         </dependencies>

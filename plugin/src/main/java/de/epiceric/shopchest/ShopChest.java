@@ -210,6 +210,9 @@ public class ShopChest extends JavaPlugin {
             case "v1_18_R2":
                 platform = new de.epiceric.shopchest.nms.v1_18_R2.PlatformImpl();
                 break;
+            case "v1_19_R1":
+                platform = new de.epiceric.shopchest.nms.v1_19_R1.PlatformImpl();
+                break;
             default:
                 debug("Server version not officially supported: " + Utils.getServerVersion() + "!");
                 //debug("Plugin may still work, but more errors are expected!");
