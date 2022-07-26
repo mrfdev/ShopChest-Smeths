@@ -83,6 +83,9 @@
         <!-- Avoid the deployment of all artifact  -->
         <maven.deploy.skip>true</maven.deploy.skip>
 
+        <!-- The NMS assembly classifier -->
+        <nms-classifier>legacy</nms-classifier>
+
         <!-- Name of the plugin for the final jar -->
         <buildName>ShopChest</buildName>
     </properties>
@@ -315,6 +318,7 @@
                 <groupId>de.epiceric</groupId>
                 <artifactId>shopchest-nms-all</artifactId>
                 <version>1.0.0</version>
+                <classifier>${nms-classifier}</classifier>
             </dependency>
             <dependency>
                 <groupId>de.epiceric</groupId>
@@ -328,6 +332,11 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.2.2</version>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
