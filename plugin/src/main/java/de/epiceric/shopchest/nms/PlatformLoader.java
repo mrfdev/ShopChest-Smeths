@@ -1,7 +1,5 @@
 package de.epiceric.shopchest.nms;
 
-// 4cc0cc97cac491651bff3af8b124a214
-
 import de.epiceric.shopchest.nms.reflection.PlatformImpl;
 import de.epiceric.shopchest.nms.reflection.ShopChestDebug;
 import de.epiceric.shopchest.utils.Utils;
@@ -82,9 +80,10 @@ public class PlatformLoader {
             case "9e9fe6961a80f3e586c25601590b51ec": // 1.18
             case "20b026e774dbf715e40a0b2afe114792": // 1.18.1 (v1_18_R1)
                 return new de.epiceric.shopchest.nms.v1_18_R1.PlatformImpl();
-            case "eaeedbff51b16ead3170906872fda334": // 1.18.2  (v1_18_R2)
+            case "eaeedbff51b16ead3170906872fda334": // 1.18.2 (v1_18_R2)
                 return new de.epiceric.shopchest.nms.v1_18_R2.PlatformImpl();
-            case "7b9de0da1357e5b251eddde9aa762916": // 1.19 (v1_19_R1)
+            case "7b9de0da1357e5b251eddde9aa762916": // 1.19
+            case "4cc0cc97cac491651bff3af8b124a214": // 1.19.1 (v1_19_R1)
                 return new de.epiceric.shopchest.nms.v1_19_R1.PlatformImpl();
             default:
                 return null;
