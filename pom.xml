@@ -313,11 +313,11 @@
                 <version>1.18.4-SNAPSHOT</version>
             </dependency>
 
-            <!-- Internal nms shaded dependencies -->
+            <!-- Internal nms shaded dependency -->
             <dependency>
                 <groupId>de.epiceric</groupId>
                 <artifactId>shopchest-nms-all</artifactId>
-                <version>1.0.0</version>
+                <version>1.0.1</version>
                 <classifier>${nms-classifier}</classifier>
             </dependency>
             <dependency>

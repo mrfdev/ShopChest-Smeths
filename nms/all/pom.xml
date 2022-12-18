@@ -5,12 +5,12 @@
     <parent>
         <artifactId>shopchest-nms</artifactId>
         <groupId>de.epiceric</groupId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shopchest-nms-all</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 
     <packaging>pom</packaging>
 
@@ -47,6 +47,10 @@
         <dependency>
             <groupId>de.epiceric</groupId>
             <artifactId>shopchest-nms-v1_19_R1</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>de.epiceric</groupId>
+            <artifactId>shopchest-nms-v1_19_R2</artifactId>
         </dependency>
     </dependencies>
 
