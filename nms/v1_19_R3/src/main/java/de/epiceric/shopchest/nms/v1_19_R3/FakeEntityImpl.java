@@ -28,13 +28,13 @@ public abstract class FakeEntityImpl<T> implements FakeEntity {
 
     static {
         try {
-            final Field entityCounterField = Entity.class.getDeclaredField("c"); // ENTITY_COUNTER
+            final Field entityCounterField = Entity.class.getDeclaredField("d"); // ENTITY_COUNTER
             entityCounterField.setAccessible(true);
             ENTITY_COUNTER = (AtomicInteger) entityCounterField.get(null);
-            final Field dataNoGravityField = Entity.class.getDeclaredField("aP"); // DATA_NO_GRAVITY
+            final Field dataNoGravityField = Entity.class.getDeclaredField("aU"); // DATA_NO_GRAVITY
             dataNoGravityField.setAccessible(true);
             DATA_NO_GRAVITY = forceCast(dataNoGravityField.get(null));
-            final Field dataSilentField = Entity.class.getDeclaredField("aO"); // DATA_SILENT
+            final Field dataSilentField = Entity.class.getDeclaredField("aT"); // DATA_SILENT
             dataSilentField.setAccessible(true);
             DATA_SILENT = forceCast(dataSilentField.get(null));
         } catch (ReflectiveOperationException e) {
