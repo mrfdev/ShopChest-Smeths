@@ -36,7 +36,7 @@
                 <repository>
                     <id>github</id>
                     <name>GitHub Packages</name>
-                    <url>https://maven.pkg.github.com/xsmeths/ShopChest</url>
+                    <url>https://maven.pkg.github.com/Flowsqy/ShopChest</url>
                 </repository>
             </repositories>
         </profile>
@@ -67,7 +67,7 @@
         <repository>
             <id>github</id>
             <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/xsmeths/ShopChest</url>
+            <url>https://maven.pkg.github.com/Flowsqy/ShopChest</url>
         </repository>
     </distributionManagement>
 
