@@ -33,10 +33,10 @@ public class FakeArmorStandImpl extends FakeEntityImpl<String> implements FakeAr
             final Field dataSharedFlagsId = Entity.class.getDeclaredField("an"); // DATA_SHARED_FLAGS_ID
             dataSharedFlagsId.setAccessible(true);
             DATA_SHARED_FLAGS_ID = forceCast(dataSharedFlagsId.get(null));
-            final Field dataCustomNameField = Entity.class.getDeclaredField("aR"); // DATA_CUSTOM_NAME
+            final Field dataCustomNameField = Entity.class.getDeclaredField("aU"); // DATA_CUSTOM_NAME
             dataCustomNameField.setAccessible(true);
             DATA_CUSTOM_NAME = forceCast(dataCustomNameField.get(null));
-            final Field dataCustomNameVisibleField = Entity.class.getDeclaredField("aS"); // DATA_CUSTOM_NAME_VISIBLE
+            final Field dataCustomNameVisibleField = Entity.class.getDeclaredField("aV"); // DATA_CUSTOM_NAME_VISIBLE
             dataCustomNameVisibleField.setAccessible(true);
             DATA_CUSTOM_NAME_VISIBLE = forceCast(dataCustomNameVisibleField.get(null));
         } catch (ReflectiveOperationException e) {
