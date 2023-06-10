@@ -91,6 +91,12 @@
                 <version>1.0.0</version>
                 <scope>provided</scope>
             </dependency>
+            <dependency>
+                <groupId>de.epiceric</groupId>
+                <artifactId>shopchest-nms-v1_20_R1</artifactId>
+                <version>1.0.0</version>
+                <scope>provided</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
