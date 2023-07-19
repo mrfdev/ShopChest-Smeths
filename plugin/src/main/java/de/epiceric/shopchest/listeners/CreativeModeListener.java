@@ -1,8 +1,8 @@
 package de.epiceric.shopchest.listeners;
 
 import de.epiceric.shopchest.ShopChest;
-import de.epiceric.shopchest.language.Message;
-import de.epiceric.shopchest.language.MessageRegistry;
+import de.epiceric.shopchest.config.Placeholder;
+import de.epiceric.shopchest.language.*;
 import de.epiceric.shopchest.utils.ClickType;
 import de.epiceric.shopchest.utils.ClickType.SelectClickType;
 import org.bukkit.Material;
@@ -48,10 +48,11 @@ public class CreativeModeListener implements Listener {
             ((SelectClickType) clickType).setItem(e.getCursor());
             p.closeInventory();
 
-            final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
-            p.sendMessage(messageRegistry.getMessage(Message.ITEM_SELECTED
-                    // TODO Link it
-                    //, new Replacement(Placeholder.ITEM_NAME, LanguageUtils.getItemName(e.getCursor()))
+            final LanguageManager languageManager = plugin.getLanguageManager();
+            final MessageRegistry messageRegistry = languageManager.getMessageRegistry();
+            final LocalizedItemManager localizedItemManager = languageManager.getLocalizedItemManager();
+            p.sendMessage(messageRegistry.getMessage(Message.ITEM_SELECTED,
+                    new Replacement(Placeholder.ITEM_NAME, localizedItemManager.getItemName(e.getCursor()))
             ));
             plugin.getShopCommand().createShopAfterSelected(p, (SelectClickType) clickType);
         }

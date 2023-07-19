@@ -1,5 +1,6 @@
 package de.epiceric.shopchest.shop;
 
+import de.epiceric.shopchest.ShopChest;
 import org.bukkit.inventory.ItemStack;
 
 public class ShopProduct {
@@ -21,8 +22,8 @@ public class ShopProduct {
      * @return The localized name of the product's {@link ItemStack} in the selected language file.
      */
     public String getLocalizedName() {
-        // TODO Link it to the current language implementation
-        return "";//LanguageUtils.getItemName(getItemStack());
+        return ShopChest.getInstance().getLanguageManager().getLocalizedItemManager().getItemName(getItemStack());
+        //LanguageUtils.getItemName(getItemStack());
     }
 
     /**

@@ -1,0 +1,71 @@
+package de.epiceric.shopchest.language;
+
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
+import java.util.Objects;
+
+public class LocalizedItemManager {
+
+    private final Map<String, String> itemTranslations;
+
+    public LocalizedItemManager(@NotNull Map<String, String> itemTranslations) {
+        this.itemTranslations = itemTranslations;
+    }
+
+    public String getItemName(@Nullable ItemStack stack) {
+        if (stack == null) {
+            return null;
+        }
+
+        final ItemMeta meta;
+        if (!stack.hasItemMeta() || (meta = stack.getItemMeta()) == null) {
+            return getDefaultName(stack);
+        }
+
+        final String displayName;
+        if (meta.hasDisplayName() && !(displayName = meta.getDisplayName()).isEmpty()) {
+            return displayName;
+        }
+
+        if (meta instanceof BookMeta) {
+            return ((BookMeta) meta).getTitle();
+        }
+
+        if (meta instanceof SkullMeta) {
+            final SkullMeta skullMeta = (SkullMeta) meta;
+            if (!skullMeta.hasOwner()) {
+                return getDefaultName(stack);
+            }
+            skullMeta.getOwningPlayer();
+            final String defaultName = getDefaultName(stack);
+            final String ownerName = Objects.requireNonNull(skullMeta.getOwningPlayer()).getName();
+            if (ownerName == null) {
+                return defaultName;
+            }
+            return String.format(defaultName, ownerName);
+        }
+
+        return getDefaultName(stack);
+    }
+
+    @NotNull
+    private String getDefaultName(@NotNull ItemStack stack) {
+        return getCached(stack.getTranslationKey());
+    }
+
+    @NotNull
+    private String getCached(@NotNull String key) {
+        final String cachedTranslation = itemTranslations.get(key);
+        if (cachedTranslation == null) {
+            throw new RuntimeException("Could not get the translation for '" + key + "'. Report it to github");
+        }
+        return cachedTranslation;
+    }
+
+}

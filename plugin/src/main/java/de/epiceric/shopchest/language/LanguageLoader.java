@@ -43,7 +43,8 @@ public class LanguageLoader {
             throw new RuntimeException(e);
         }
         final Map<String, String> storedItems = languageConfigurationLoader.getTranslations(itemsFile, logger);
-        return new LanguageManager(messageRegistry);
+        final LocalizedItemManager localizedItemManager = new LocalizedItemManager(storedItems);
+        return new LanguageManager(messageRegistry, localizedItemManager);
     }
 
     @NotNull
