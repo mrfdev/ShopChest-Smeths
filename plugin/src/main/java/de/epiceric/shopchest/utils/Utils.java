@@ -2,8 +2,8 @@ package de.epiceric.shopchest.utils;
 
 import de.epiceric.shopchest.ShopChest;
 import de.epiceric.shopchest.config.Placeholder;
-import de.epiceric.shopchest.language.LanguageUtils;
 import de.epiceric.shopchest.language.Message;
+import de.epiceric.shopchest.language.MessageRegistry;
 import de.epiceric.shopchest.language.Replacement;
 import de.epiceric.shopchest.nms.CustomBookMeta;
 import de.epiceric.shopchest.shop.Shop;
@@ -301,11 +301,12 @@ public class Utils {
      * @param p The player to receive the notification
      */
     public static void sendUpdateMessage(ShopChest plugin, Player p) {
+        final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
         plugin.getPlatform().getTextComponentHelper().sendUpdateMessage(
                 p,
-                LanguageUtils.getMessage(Message.UPDATE_AVAILABLE,
+                messageRegistry.getMessage(Message.UPDATE_AVAILABLE,
                         new Replacement(Placeholder.VERSION, plugin.getLatestVersion())),
-                LanguageUtils.getMessage(Message.UPDATE_CLICK_TO_DOWNLOAD),
+                messageRegistry.getMessage(Message.UPDATE_CLICK_TO_DOWNLOAD),
                 plugin.getDownloadLink()
         );
     }

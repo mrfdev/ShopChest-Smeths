@@ -4,8 +4,8 @@ import de.epiceric.shopchest.config.Placeholder;
 
 public class Replacement {
 
-    private Placeholder placeholder;
-    private String replacement;
+    private final Placeholder placeholder;
+    private final String replacement;
 
     public Replacement(Placeholder placeholder, Object replacement) {
         this.placeholder = placeholder;

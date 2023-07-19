@@ -1,10 +1,14 @@
 package de.epiceric.shopchest.shop;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-
+import de.epiceric.shopchest.ShopChest;
+import de.epiceric.shopchest.config.Config;
+import de.epiceric.shopchest.config.Placeholder;
+import de.epiceric.shopchest.config.hologram.HologramFormat;
+import de.epiceric.shopchest.exceptions.ChestNotFoundException;
+import de.epiceric.shopchest.exceptions.NotEnoughSpaceException;
+import de.epiceric.shopchest.nms.Hologram;
+import de.epiceric.shopchest.utils.ItemUtils;
+import de.epiceric.shopchest.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -20,16 +24,10 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import de.epiceric.shopchest.ShopChest;
-import de.epiceric.shopchest.config.Config;
-import de.epiceric.shopchest.config.hologram.HologramFormat;
-import de.epiceric.shopchest.config.Placeholder;
-import de.epiceric.shopchest.exceptions.ChestNotFoundException;
-import de.epiceric.shopchest.exceptions.NotEnoughSpaceException;
-import de.epiceric.shopchest.language.LanguageUtils;
-import de.epiceric.shopchest.nms.Hologram;
-import de.epiceric.shopchest.utils.ItemUtils;
-import de.epiceric.shopchest.utils.Utils;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
 public class Shop {
 
@@ -267,7 +265,8 @@ public class Shop {
         requirements.put(HologramFormat.Requirement.AMOUNT, getProduct().getAmount());
         requirements.put(HologramFormat.Requirement.ITEM_TYPE, itemStack.getType() + (itemStack.getDurability() > 0 ? ":" + itemStack.getDurability() : ""));
         requirements.put(HologramFormat.Requirement.ITEM_NAME, itemStack.hasItemMeta() ? itemStack.getItemMeta().getDisplayName() : null);
-        requirements.put(HologramFormat.Requirement.HAS_ENCHANTMENT, !LanguageUtils.getEnchantmentString(ItemUtils.getEnchantments(itemStack)).isEmpty());
+        //TODO Link it
+        //requirements.put(HologramFormat.Requirement.HAS_ENCHANTMENT, !LanguageUtils.getEnchantmentString(ItemUtils.getEnchantments(itemStack)).isEmpty());
         requirements.put(HologramFormat.Requirement.BUY_PRICE, getBuyPrice());
         requirements.put(HologramFormat.Requirement.SELL_PRICE, getSellPrice());
         requirements.put(HologramFormat.Requirement.HAS_POTION_EFFECT, ItemUtils.getPotionEffect(itemStack) != null);
@@ -287,13 +286,17 @@ public class Shop {
         placeholders.put(Placeholder.VENDOR, getVendor().getName());
         placeholders.put(Placeholder.AMOUNT, getProduct().getAmount());
         placeholders.put(Placeholder.ITEM_NAME, getProduct().getLocalizedName());
-        placeholders.put(Placeholder.ENCHANTMENT, LanguageUtils.getEnchantmentString(ItemUtils.getEnchantments(itemStack)));
+        //TODO Link it
+        //placeholders.put(Placeholder.ENCHANTMENT, LanguageUtils.getEnchantmentString(ItemUtils.getEnchantments(itemStack)));
         placeholders.put(Placeholder.BUY_PRICE, getBuyPrice());
         placeholders.put(Placeholder.SELL_PRICE, getSellPrice());
+        //TODO Link it
+        /*
         placeholders.put(Placeholder.POTION_EFFECT, LanguageUtils.getPotionEffectName(itemStack));
         placeholders.put(Placeholder.MUSIC_TITLE, LanguageUtils.getMusicDiscName(itemStack.getType()));
         placeholders.put(Placeholder.BANNER_PATTERN_NAME, LanguageUtils.getBannerPatternName(itemStack.getType()));
         placeholders.put(Placeholder.GENERATION, LanguageUtils.getBookGenerationName(itemStack));
+        */
         placeholders.put(Placeholder.STOCK, Utils.getAmount(inventory, itemStack));
         placeholders.put(Placeholder.MAX_STACK, itemStack.getMaxStackSize());
         placeholders.put(Placeholder.CHEST_SPACE, Utils.getFreeSpaceForItem(inventory, itemStack));

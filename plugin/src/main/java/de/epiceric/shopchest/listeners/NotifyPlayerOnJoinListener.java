@@ -1,20 +1,19 @@
 package de.epiceric.shopchest.listeners;
 
+import de.epiceric.shopchest.ShopChest;
+import de.epiceric.shopchest.config.Config;
+import de.epiceric.shopchest.config.Placeholder;
+import de.epiceric.shopchest.language.Message;
+import de.epiceric.shopchest.language.MessageRegistry;
+import de.epiceric.shopchest.language.Replacement;
+import de.epiceric.shopchest.utils.Callback;
+import de.epiceric.shopchest.utils.Permissions;
+import de.epiceric.shopchest.utils.Utils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-
-import de.epiceric.shopchest.ShopChest;
-import de.epiceric.shopchest.config.Config;
-import de.epiceric.shopchest.config.Placeholder;
-import de.epiceric.shopchest.language.LanguageUtils;
-import de.epiceric.shopchest.language.Message;
-import de.epiceric.shopchest.language.Replacement;
-import de.epiceric.shopchest.utils.Callback;
-import de.epiceric.shopchest.utils.Permissions;
-import de.epiceric.shopchest.utils.Utils;
 
 public class NotifyPlayerOnJoinListener implements Listener {
 
@@ -46,7 +45,8 @@ public class NotifyPlayerOnJoinListener implements Listener {
                     @Override
                     public void onResult(Double result) {
                         if (result != 0) {
-                            p.sendMessage(LanguageUtils.getMessage(Message.REVENUE_WHILE_OFFLINE,
+                            final MessageRegistry messageRegistry = ShopChest.getInstance().getLanguageManager().getMessageRegistry();
+                            p.sendMessage(messageRegistry.getMessage(Message.REVENUE_WHILE_OFFLINE,
                                     new Replacement(Placeholder.REVENUE, String.valueOf(result))));
                         }
                     }

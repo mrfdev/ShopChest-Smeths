@@ -1,0 +1,332 @@
+# Set the message when a shop is created at the clicked chest.
+# Usable Placeholders: %CREATION-PRICE%
+message.shop-created=&6You were withdrawn &c%CREATION-PRICE% &6to create this shop.
+
+# Set the message when an admin shop is created at the clicked chest.
+# Usable Placeholders: %CREATION-PRICE%
+message.admin-shop-created=&6You were withdrawn &c%CREATION-PRICE% &6to create this admin shop.
+
+# Set the message when the clicked chest already is a shop.
+message.chest-already-shop=&cChest already is shop.
+
+# Set the message when there is a block above the clicked chest.
+message.chest-blocked=&cThere must not be a block above the chest.
+
+# Set the message when a player tries to place a chest next to a shop's chest
+# to create a double chest shop, but there is a block above the placed chest.
+message.double-chest-blocked=&cThere must not be a block above the chest.
+
+# Set the message when the clicked shop is removed but no refund was given.
+message.shop-removed=&6Shop removed.
+
+# Set the message when the clicked shop is removed and the player is refunded
+# the creation price.
+# Usable Placeholders: %CREATION-PRICE%
+message.shop-removed-refund=&6Shop removed. You were refunded &c%CREATION-PRICE%&6.
+
+# Set the message when all shops of a player were removed.
+# Usable Placeholders: %AMOUNT%, %VENDOR%
+message.all-shops-removed=&6Removed all (&c%AMOUNT%&6) shops of &c%VENDOR%&6.
+
+# Set the message when the clicked chest is not a shop.
+message.chest-no-shop=&cChest is not a shop.
+
+# Set the message when the player doesn't have enough money to create a shop
+# Usable Placeholders: %CREATION-PRICE%
+message.shop-create-not-enough-money=&cNot enough money. You need &6%CREATION-PRICE% &cto create a shop.
+
+# Set the vendor message the player gets after entering '/shop info'.
+# Usable Placeholders: %VENDOR%
+message.shopInfo.vendor=&6Vendor: &e%VENDOR%
+
+# Set the product message the player gets after entering '/shop info'.
+# Usable Placeholders: %AMOUNT%, %ITEMNAME%
+message.shopInfo.product=&6Product: &e%AMOUNT% x %ITEMNAME%
+
+# Set the in-stock message the player after entering '/shop info'.
+# Usable Placeholders=%STOCK%
+message.shopInfo.stock=&6In Stock: &e%STOCK%
+
+# Set the chest-space message the player after entering '/shop info'.
+# Usable Placeholders=%CHEST-SPACE%
+message.shopInfo.chest-space=&6Space in chest: &e%CHEST-SPACE%
+
+# Set the price message the player gets after entering '/shop info'.
+# Usable Placeholders: %BUY-PRICE%, %SELL-PRICE%
+message.shopInfo.price=&6Price: Buy: &e%BUY-PRICE%&6 Sell: &e%SELL-PRICE%
+
+# If the sell price or buy price is disabled, this message will be displayed instead of the price in the message above.
+message.shopInfo.disabled=&7Disabled
+
+# Set the type message the player gets after entering '/shop info' ...
+# ... when the shop is normal.
+message.shopInfo.is-normal=&6Type: &eNormal
+
+# ... when the shop is an admin shop.
+message.shopInfo.is-admin=&6Type: &eAdmin
+
+# Set the message when the player tries to create a shop with sell price and buy price set to 0
+message.buy-and-sell-disabled=&cYou can't create a shop with buying and selling disabled.
+
+# Set the message when the player successfully bought something.
+# Usable Placeholders: %AMOUNT%, %ITEMNAME%, %BUY-PRICE%, %VENDOR%
+message.buy-success=&aYou bought &6%AMOUNT% x %ITEMNAME%&a for &6%BUY-PRICE%&a from &6%VENDOR%&a.
+
+# Set the message when the player successfully bought something from an admin shop.
+# Usable Placeholders: %AMOUNT%, %ITEMNAME%, %BUY-PRICE%
+message.buy-success-admin=&aYou bought &6%AMOUNT% x %ITEMNAME%&a for &6%BUY-PRICE%&a.
+
+# Set the message when the player successfully sold something.
+# Usable Placeholders: %AMOUNT%, %ITEMNAME%, %SELL-PRICE%, %VENDOR%
+message.sell-success=&aYou sold &6%AMOUNT% x %ITEMNAME%&a for &6%SELL-PRICE%&a to &6%VENDOR%&a.
+
+# Set the message when the player successfully sold something to an admin shop.
+# Usable Placeholders: %AMOUNT%, %ITEMNAME%, %SELL-PRICE%
+message.sell-success-admin=&aYou sold &6%AMOUNT% x %ITEMNAME%&a for &6%SELL-PRICE%&a.
+
+# Set the message when a player bought something from the player's shop.
+# Usable Placeholders: %AMOUNT%, %ITEMNAME%, %BUY-PRICE%, %PLAYER%
+message.someone-bought=&6%PLAYER% &abought &6%AMOUNT% x %ITEMNAME%&a for &6%BUY-PRICE%&a from your shop.
+
+# Set the message when a player sold something to the player's shop.
+# Usable Placeholders: %AMOUNT%, %ITEMNAME%, %SELL-PRICE%, %PLAYER%
+message.someone-sold=&6%PLAYER% &asold &6%AMOUNT% x %ITEMNAME%&a for &6%SELL-PRICE%&a to your shop.
+
+# Set the message when a player joins and made a revenue while he was offline.
+# Usable Placeholders: %REVENUE%
+message.revenue-while-offline=&6While you were offline, your shops have made a revenue of &c%REVENUE%&6.
+
+# Set the message when the inventory is full when the player is buying something.
+message.not-enough-inventory-space=&cNot enough space in inventory.
+
+# Set the message when the shop's inventory is full when the player is selling something.
+message.chest-not-enough-inventory-space=&cShop is full.
+
+# Set the message when the player doesn't have enough money to buy something.
+message.not-enough-money=&cNot enough money.
+
+# Set the message when the player doesn't have enough items to sell.
+message.not-enough-items=&cNot enough items.
+
+# Set the message when the vendor doesn't have enough money to buy something from the player
+message.vendor-not-enough-money=&cVendor has not enough money.
+
+# Set the message when the shop is out of stock.
+message.out-of-stock=&cShop out of stock.
+
+# Set the message the vendor gets when his shop is out of stock
+# Usable Placeholders: %AMOUNT%, %ITEMNAME%
+message.vendor-out-of-stock=&cYour shop that sells &6%AMOUNT% x %ITEMNAME% &cis out of stock.
+
+# Set the message when an error occurred.
+# Usable Placeholders: %ERROR%
+message.error-occurred=&cAn error occurred: %ERROR%
+
+# Set the message when the arguments <AMOUNT>, <BUY-PRICE> and/or <SELL-PRICE> of '/shop create' are not a number.
+message.amount-and-price-not-number=&cAmount and prices must be numbers.
+
+# Set the message when the argument <AMOUNT> is zero
+message.amount-is-zero=&cAmount must be greater than 0.
+
+# Set the message when the config value "allow-decimals-in-prices" is set to false
+# and a player enters a price with decimals
+message.prices-contain-decimals=&cPrices must not contain decimals.
+
+# Set the message when the player doesn't hold an item in the hand.
+message.no-item-in-hand=&cNo item in hand
+
+# Set the message when the player must click a chest to create a shop.
+message.click-chest-to-create-shop=&aClick a chest within 15 seconds to create a shop.
+
+# Set the message when the player must click a shop to remove it.
+message.click-chest-to-remove-shop=&aClick a shop within 15 seconds to remove it.
+
+# Set the message when the player must click a shop to retrieve information.
+message.click-chest-for-info=&aClick a shop within 15 seconds to retrieve information.
+
+# Set the message when the player must click a shop to open it.
+message.click-chest-to-open-shop=&aClick a shop within 15 seconds to open it.
+
+# Set the message when the player must click the shop again to confirm the buy/sell.
+message.click-to-confirm=&aClick again to confirm.
+
+# Set the message when the player opened a shop.
+# Usable Placeholders: %VENDOR%
+message.opened-shop=&aYou opened %VENDOR%'s shop.
+
+# Set the message when the player tries to break a shop.
+message.cannot-break-shop=&cYou can't break a shop.
+
+# Set the message when the player tries to sell a broken item.
+message.cannot-sell-broken-item=&cYou can't sell a broken item.
+
+# Set the message when the entered buy price is below the minimum price.
+# Usable Placeholders: %MIN-PRICE%
+message.buy-price-too-low=&cThe buy price must be higher than %MIN-PRICE%.
+
+# Set the message when the entered sell price is below the minimum price.
+# Usable Placeholders: %MIN-PRICE%
+message.sell-price-too-low=&cThe sell price must be higher than %MIN-PRICE%.
+
+# Set the message when the entered buy price is below the maximum price.
+# Usable Placeholders: %MAX-PRICE%
+message.buy-price-too-high=&cThe buy price must be lower than %MAX-PRICE%.
+
+# Set the message when the entered sell price is below the maximum price.
+# Usable Placeholders: %MAX-PRICE%
+message.sell-price-too-high=&cThe sell price must be lower than %MAX-PRICE%.
+
+# Set the message when buying is disabled at the shop.
+message.buying-disabled=&cBuying is disabled at this shop.
+
+# Set the message when selling is disabled at the shop.
+message.selling-disabled=&cSelling is disabled at this shop.
+
+# Set the message when reloading is done.
+# Usable Placeholders: %AMOUNT% (Amount of shops)
+message.reloaded-shops=&aSuccessfully reloaded %AMOUNT% shop/s.
+
+# Set the message when the player's shop limit is reached.
+# Usable Placeholders: %LIMIT%
+message.shop-limit-reached=&cYou reached your limit of &6%LIMIT% &cshop/s.
+
+# Set the message that shows the player how many shop slots of his shop limit he has occupied.
+# Usable Placeholders: %LIMIT%, %AMOUNT% (Amount of shops)
+message.occupied-shop-slots=&6You have &c%AMOUNT%/%LIMIT% &6shop slot/s occupied.
+
+# Set the message when the player tries to create a shop with an item which is listed in the blacklist.
+message.cannot-sell-item=&cYou cannot create a shop with this item.
+
+# Set the message when the player tries to use a shop in creative mode.
+message.use-in-creative=&cYou cannot use a shop in creative mode.
+
+# Set the message when the player has to select an item from the creative menu.
+message.select-item=&aOpen your inventory, and drop an item to select it.
+
+# Set the message when the player has selected an item from the creative menu.
+# Usable Placeholders: %ITEMNAME%
+message.item-selected=&aItem has been selected: &6%ITEMNAME%
+
+# Set the message when the player closes the creative menu to select an item.
+message.creation-cancelled=&cShop creation has been cancelled.
+
+# Set the message when an update is available.
+# Usable Placeholders: %VERSION%
+message.update.update-available=&6&lVersion &c&l%VERSION% &6&lof &c&lShopChest &6&lis available &c&lhere.
+
+# Set the message you get when hovering over the available message.
+message.update.click-to-download=Click to download
+
+# Set the message when no update is available.
+message.update.no-update=&6&lNo new update available.
+
+# Set the message when the update checker is started.
+message.update.checking=&6&lChecking for updates...
+
+# Set the message when an error occurs while checking for updates.
+message.update.error=&c&lError while checking for updates.
+
+# Set the message when a not permitted player tries to create a shop.
+message.noPermission.create=&cYou don't have permission to create a shop.
+
+# Set the message when a not permitted player tries to create an admin shop.
+message.noPermission.create-admin=&cYou don't have permission to create an admin shop.
+
+# Set the message when a not permitted player tries to create a shop on a protected chest.
+message.noPermission.create-protected=&cYou don't have permission to create a shop here.
+
+# Set the message when a not permitted player tries to open another player's shop.
+message.noPermission.open-others=&cYou don't have permission to open this chest.
+
+# Set the message when a not permitted player tries to buy something.
+message.noPermission.buy=&cYou don't have permission to buy something.
+
+# Set the message when a not permitted player tries to sell something.
+message.noPermission.sell=&cYou don't have permission to sell something.
+
+# Set the message when a player tries to buy something in a region/plot that denied shop use.
+message.noPermission.buy-here=&cYou don't have permission to buy something here.
+
+# Set the message when a player tries to sell something in a region/plot region that denied shop use.
+message.noPermission.sell-here=&cYou don't have permission to sell something here.
+
+# Set the message when a not permitted player tries to remove another player's shop.
+message.noPermission.remove-others=&cYou don't have permission to remove this shop.
+
+# Set the message when a not permitted player tries to remove an admin shop.
+message.noPermission.remove-admin=&cYou don't have permission to remove an admin shop.
+
+# Set the message when a not permitted player tries to reload the shops.
+message.noPermission.reload=&cYou don't have permission to reload the shops.
+
+# Set the message when a not permitted player tries to check for updates.
+message.noPermission.update=&cYou don't have permission to check for updates.
+
+# Set the message when a not permitted player tries to change configuration values.
+message.noPermission.config=&cYou don't have permission to change configuration values.
+
+# Set the message when a not permitted player tries to extend another player's shop's chest.
+message.noPermission.extend-others=&cYou don't have permission to extend this chest.
+
+# Set the message when a not permitted player tries to extend a chest into a protected region/plot (e.g. WorldGuard/Towny).
+message.noPermission.extend-protected=&cYou don't have permission to extend this chest to here.
+
+# Set the header of the help message the player gets after entering '/shop' or an invalid command.
+# Usable Placeholders: %COMMAND%
+message.commandDescription.header=&6==== &c/%COMMAND% &6Help
+
+# Set the footer of the help message the player gets after entering '/shop' or an invalid command.
+# Usable Placeholders: %COMMAND%
+message.commandDescription.footer=&6==== End
+
+# Set the command description message for '/shop create' when you type '/shop'.
+# Usable Placeholders: %COMMAND%
+message.commandDescription.create=&a/%COMMAND% create <amount> <buy-price> <sell-price> - Create a shop.
+
+# Set the command description message for '/shop create' when you type '/shop' and have permission "shopchest.create.admin"
+# Usable Placeholders: %COMMAND%
+message.commandDescription.create-admin=&a/%COMMAND% create <amount> <buy-price> <sell-price> [admin] - Create a shop.
+
+# Set the command description message for '/shop remove' when you type '/shop'.
+# Usable Placeholders: %COMMAND%
+message.commandDescription.remove=&a/%COMMAND% remove - Remove a shop.
+
+# Set the command description message for '/shop info' when you type '/shop'.
+# Usable Placeholders: %COMMAND%
+message.commandDescription.info=&a/%COMMAND% info - Retrieve shop information.
+
+# Set the command description message for '/shop removeall' when you type '/shop'.
+# Usable Placeholders: %COMMAND%
+message.commandDescription.removeall=&a/%COMMAND% removeall - Remove all shops of a player.
+
+# Set the command description message for '/shop reload' when you type '/shop'.
+# Usable Placeholders: %COMMAND%
+message.commandDescription.reload=&a/%COMMAND% reload - Reload shops.
+
+# Set the command description message for '/shop update' when you type '/shop'.
+# Usable Placeholders: %COMMAND%
+message.commandDescription.update=&a/%COMMAND% update - Check for Updates.
+
+# Set the command description message for '/shop limits' when you type '/shop'.
+# Usable Placeholders: %COMMAND%
+message.commandDescription.limits=&a/%COMMAND% limits - View shop limits.
+
+# Set the command description message for '/shop open' when you type '/shop'.
+# Usable Placeholders: %COMMAND%
+message.commandDescription.open=&a/%COMMAND% open - Open a shop.
+
+# Set the command description message for '/shop config' when you type '/shop'.
+# Usable Placeholders: %COMMAND%
+message.commandDescription.config=&a/%COMMAND% config <set|add|remove> <property> <value> - Change configuration values.
+
+# Set the message a player gets after setting a configuration value per command
+# Usable Placeholders: %PROPERTY%, %VALUE%
+message.config.set=&6Changed &a%PROPERTY% &6to &a%VALUE%&6.
+
+# Set the message a player gets after adding a value to a list in the configuration per command
+# Usable Placeholders: %PROPERTY%, %VALUE%
+message.config.added=&6Added &a%VALUE% &6to &a%PROPERTY%&6.
+
+# Set the message a player gets after removing a value from a list in the configuration per command
+# Usable Placeholders: %PROPERTY%, %VALUE%
+message.config.removed=&6Removed &a%VALUE% &6from &a%PROPERTY%&6.

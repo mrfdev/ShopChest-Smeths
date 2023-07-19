@@ -1,5 +1,51 @@
 package de.epiceric.shopchest;
 
+import com.palmergames.bukkit.towny.Towny;
+import com.wasteofplastic.askyblock.ASkyBlock;
+import de.epiceric.shopchest.command.ShopCommand;
+import de.epiceric.shopchest.config.Config;
+import de.epiceric.shopchest.config.hologram.HologramFormat;
+import de.epiceric.shopchest.event.ShopInitializedEvent;
+import de.epiceric.shopchest.external.BentoBoxShopFlag;
+import de.epiceric.shopchest.external.PlotSquaredOldShopFlag;
+import de.epiceric.shopchest.external.PlotSquaredShopFlag;
+import de.epiceric.shopchest.external.WorldGuardShopFlag;
+import de.epiceric.shopchest.external.listeners.*;
+import de.epiceric.shopchest.language.LanguageLoader;
+import de.epiceric.shopchest.language.LanguageManager;
+import de.epiceric.shopchest.listeners.BentoBoxListener;
+import de.epiceric.shopchest.listeners.WorldGuardListener;
+import de.epiceric.shopchest.listeners.*;
+import de.epiceric.shopchest.nms.Platform;
+import de.epiceric.shopchest.nms.PlatformLoader;
+import de.epiceric.shopchest.nms.reflection.ShopChestDebug;
+import de.epiceric.shopchest.shop.Shop;
+import de.epiceric.shopchest.shop.Shop.ShopType;
+import de.epiceric.shopchest.sql.Database;
+import de.epiceric.shopchest.sql.MySQL;
+import de.epiceric.shopchest.sql.SQLite;
+import de.epiceric.shopchest.utils.*;
+import de.epiceric.shopchest.utils.UpdateChecker.UpdateCheckerResult;
+import fr.xephi.authme.AuthMe;
+import me.ryanhamshire.GriefPrevention.GriefPrevention;
+import me.wiefferink.areashop.AreaShop;
+import net.milkbowl.vault.economy.Economy;
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.AdvancedPie;
+import org.bstats.charts.SimplePie;
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.codemc.worldguardwrapper.WorldGuardWrapper;
+import pl.islandworld.IslandWorld;
+import us.talabrek.ultimateskyblock.api.uSkyBlockAPI;
+import world.bentobox.bentobox.BentoBox;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -15,77 +61,13 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import com.palmergames.bukkit.towny.Towny;
-import com.wasteofplastic.askyblock.ASkyBlock;
-
-import de.epiceric.shopchest.nms.Platform;
-import de.epiceric.shopchest.nms.PlatformLoader;
-import de.epiceric.shopchest.nms.reflection.ShopChestDebug;
-import org.bstats.bukkit.Metrics;
-import org.bstats.charts.AdvancedPie;
-import org.bstats.charts.SimplePie;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.World;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.codemc.worldguardwrapper.WorldGuardWrapper;
-
-import de.epiceric.shopchest.command.ShopCommand;
-import de.epiceric.shopchest.config.Config;
-import de.epiceric.shopchest.config.hologram.HologramFormat;
-import de.epiceric.shopchest.event.ShopInitializedEvent;
-import de.epiceric.shopchest.external.BentoBoxShopFlag;
-import de.epiceric.shopchest.external.PlotSquaredOldShopFlag;
-import de.epiceric.shopchest.external.PlotSquaredShopFlag;
-import de.epiceric.shopchest.external.WorldGuardShopFlag;
-import de.epiceric.shopchest.external.listeners.ASkyBlockListener;
-import de.epiceric.shopchest.external.listeners.GriefPreventionListener;
-import de.epiceric.shopchest.external.listeners.IslandWorldListener;
-import de.epiceric.shopchest.external.listeners.PlotSquaredListener;
-import de.epiceric.shopchest.external.listeners.TownyListener;
-import de.epiceric.shopchest.external.listeners.USkyBlockListener;
-import de.epiceric.shopchest.language.LanguageUtils;
-import de.epiceric.shopchest.listeners.AreaShopListener;
-import de.epiceric.shopchest.listeners.BentoBoxListener;
-import de.epiceric.shopchest.listeners.BlockExplodeListener;
-import de.epiceric.shopchest.listeners.ChestProtectListener;
-import de.epiceric.shopchest.listeners.CreativeModeListener;
-import de.epiceric.shopchest.listeners.NotifyPlayerOnJoinListener;
-import de.epiceric.shopchest.listeners.ShopInteractListener;
-import de.epiceric.shopchest.listeners.ShopItemListener;
-import de.epiceric.shopchest.listeners.ShopUpdateListener;
-import de.epiceric.shopchest.listeners.WorldGuardListener;
-import de.epiceric.shopchest.shop.Shop;
-import de.epiceric.shopchest.shop.Shop.ShopType;
-import de.epiceric.shopchest.sql.Database;
-import de.epiceric.shopchest.sql.MySQL;
-import de.epiceric.shopchest.sql.SQLite;
-import de.epiceric.shopchest.utils.Callback;
-import de.epiceric.shopchest.utils.ClickType;
-import de.epiceric.shopchest.utils.Permissions;
-import de.epiceric.shopchest.utils.ShopUpdater;
-import de.epiceric.shopchest.utils.ShopUtils;
-import de.epiceric.shopchest.utils.UpdateChecker;
-import de.epiceric.shopchest.utils.UpdateChecker.UpdateCheckerResult;
-import de.epiceric.shopchest.utils.Utils;
-import fr.xephi.authme.AuthMe;
-import me.ryanhamshire.GriefPrevention.GriefPrevention;
-import me.wiefferink.areashop.AreaShop;
-import net.milkbowl.vault.economy.Economy;
-import pl.islandworld.IslandWorld;
-import us.talabrek.ultimateskyblock.api.uSkyBlockAPI;
-import world.bentobox.bentobox.BentoBox;
-
 public class ShopChest extends JavaPlugin {
 
     private static ShopChest instance;
 
     private Config config;
     private Platform platform;
+    private LanguageManager languageManager;
     private HologramFormat hologramFormat;
     private ShopCommand shopCommand;
     private Economy econ = null;
@@ -191,7 +173,6 @@ public class ShopChest extends JavaPlugin {
 
         shopUtils = new ShopUtils(this);
         saveResource("item_names.txt", true);
-        LanguageUtils.load();
 
         File hologramFormatFile = new File(getDataFolder(), "hologram-format.yml");
         if (!hologramFormatFile.exists()) {
@@ -270,6 +251,14 @@ public class ShopChest extends JavaPlugin {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * Load every language files. It needs to be called after the initialization of the configuration
+     */
+    public void loadLanguages() {
+        final LanguageLoader languageLoader = new LanguageLoader();
+        languageManager = languageLoader.loadLanguageManager(this, Config.languageFile);
     }
 
     private void loadExternalPlugins() {
@@ -555,6 +544,10 @@ public class ShopChest extends JavaPlugin {
 
     public Platform getPlatform() {
         return platform;
+    }
+
+    public LanguageManager getLanguageManager() {
+        return languageManager;
     }
 
     public HologramFormat getHologramFormat() {

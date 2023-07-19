@@ -1,5 +1,10 @@
 package de.epiceric.shopchest.listeners;
 
+import de.epiceric.shopchest.ShopChest;
+import de.epiceric.shopchest.language.Message;
+import de.epiceric.shopchest.language.MessageRegistry;
+import de.epiceric.shopchest.utils.ClickType;
+import de.epiceric.shopchest.utils.ClickType.SelectClickType;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
@@ -15,19 +20,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
-import org.bukkit.event.player.PlayerInteractAtEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerPickupItemEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-
-import de.epiceric.shopchest.ShopChest;
-import de.epiceric.shopchest.config.Placeholder;
-import de.epiceric.shopchest.language.LanguageUtils;
-import de.epiceric.shopchest.language.Message;
-import de.epiceric.shopchest.language.Replacement;
-import de.epiceric.shopchest.utils.ClickType;
-import de.epiceric.shopchest.utils.ClickType.SelectClickType;
+import org.bukkit.event.player.*;
 
 public class CreativeModeListener implements Listener {
     private ShopChest plugin;
@@ -55,8 +48,11 @@ public class CreativeModeListener implements Listener {
             ((SelectClickType) clickType).setItem(e.getCursor());
             p.closeInventory();
 
-            p.sendMessage(LanguageUtils.getMessage(Message.ITEM_SELECTED,
-                    new Replacement(Placeholder.ITEM_NAME, LanguageUtils.getItemName(e.getCursor()))));
+            final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
+            p.sendMessage(messageRegistry.getMessage(Message.ITEM_SELECTED
+                    // TODO Link it
+                    //, new Replacement(Placeholder.ITEM_NAME, LanguageUtils.getItemName(e.getCursor()))
+            ));
             plugin.getShopCommand().createShopAfterSelected(p, (SelectClickType) clickType);
         }
     }
@@ -74,7 +70,8 @@ public class CreativeModeListener implements Listener {
             return;
 
         ClickType.removePlayerClickType(p);
-        p.sendMessage(LanguageUtils.getMessage(Message.CREATION_CANCELLED));
+        final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
+        p.sendMessage(messageRegistry.getMessage(Message.CREATION_CANCELLED));
     }
     
     @EventHandler

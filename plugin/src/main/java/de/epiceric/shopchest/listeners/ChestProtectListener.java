@@ -1,7 +1,16 @@
 package de.epiceric.shopchest.listeners;
 
-import java.util.ArrayList;
-
+import de.epiceric.shopchest.ShopChest;
+import de.epiceric.shopchest.config.Config;
+import de.epiceric.shopchest.config.Placeholder;
+import de.epiceric.shopchest.event.ShopExtendEvent;
+import de.epiceric.shopchest.language.Message;
+import de.epiceric.shopchest.language.MessageRegistry;
+import de.epiceric.shopchest.language.Replacement;
+import de.epiceric.shopchest.shop.Shop;
+import de.epiceric.shopchest.shop.Shop.ShopType;
+import de.epiceric.shopchest.utils.*;
+import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -21,21 +30,7 @@ import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryHolder;
 
-import de.epiceric.shopchest.ShopChest;
-import de.epiceric.shopchest.config.Config;
-import de.epiceric.shopchest.config.Placeholder;
-import de.epiceric.shopchest.event.ShopExtendEvent;
-import de.epiceric.shopchest.language.LanguageUtils;
-import de.epiceric.shopchest.language.Message;
-import de.epiceric.shopchest.language.Replacement;
-import de.epiceric.shopchest.shop.Shop;
-import de.epiceric.shopchest.shop.Shop.ShopType;
-import de.epiceric.shopchest.utils.Callback;
-import de.epiceric.shopchest.utils.ItemUtils;
-import de.epiceric.shopchest.utils.Permissions;
-import de.epiceric.shopchest.utils.ShopUtils;
-import de.epiceric.shopchest.utils.Utils;
-import net.milkbowl.vault.economy.EconomyResponse;
+import java.util.ArrayList;
 
 public class ChestProtectListener implements Listener {
 
@@ -48,6 +43,7 @@ public class ChestProtectListener implements Listener {
     }
 
     private void remove(final Shop shop, final Block b, final Player p) {
+        final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
         if (shop.getInventoryHolder() instanceof DoubleChest) {
             DoubleChest dc = (DoubleChest) shop.getInventoryHolder();
             final Chest l = (Chest) dc.getLeftSide();
@@ -69,16 +65,16 @@ public class ChestProtectListener implements Listener {
                 EconomyResponse r = plugin.getEconomy().depositPlayer(p, shop.getLocation().getWorld().getName(), creationPrice);
                 if (!r.transactionSuccess()) {
                     plugin.debug("Economy transaction failed: " + r.errorMessage);
-                    p.sendMessage(LanguageUtils.getMessage(Message.ERROR_OCCURRED,
+                    p.sendMessage(messageRegistry.getMessage(Message.ERROR_OCCURRED,
                             new Replacement(Placeholder.ERROR, r.errorMessage)));
-                    p.sendMessage(LanguageUtils.getMessage(Message.SHOP_REMOVED_REFUND,
+                    p.sendMessage(messageRegistry.getMessage(Message.SHOP_REMOVED_REFUND,
                             new Replacement(Placeholder.CREATION_PRICE, 0)));
                 } else {
-                    p.sendMessage(LanguageUtils.getMessage(Message.SHOP_REMOVED_REFUND,
-                        new Replacement(Placeholder.CREATION_PRICE, creationPrice)));
+                    p.sendMessage(messageRegistry.getMessage(Message.SHOP_REMOVED_REFUND,
+                            new Replacement(Placeholder.CREATION_PRICE, creationPrice)));
                 }
             } else {
-                p.sendMessage(LanguageUtils.getMessage(Message.SHOP_REMOVED));
+                p.sendMessage(messageRegistry.getMessage(Message.SHOP_REMOVED));
             }   
 
             shopUtils.removeShop(shop, true);
@@ -115,7 +111,8 @@ public class ChestProtectListener implements Listener {
             }
 
             e.setCancelled(true);
-            e.getPlayer().sendMessage(LanguageUtils.getMessage(Message.CANNOT_BREAK_SHOP));
+            final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
+            e.getPlayer().sendMessage(messageRegistry.getMessage(Message.CANNOT_BREAK_SHOP));
         }
     }
 
@@ -196,21 +193,24 @@ public class ChestProtectListener implements Listener {
 
         ShopExtendEvent event = new ShopExtendEvent(p, shop, b.getLocation());
         Bukkit.getPluginManager().callEvent(event);
+
+        final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
+
         if (event.isCancelled() && !p.hasPermission(Permissions.EXTEND_PROTECTED)) {
             e.setCancelled(true);
-            p.sendMessage(LanguageUtils.getMessage(Message.NO_PERMISSION_EXTEND_PROTECTED));
+            p.sendMessage(messageRegistry.getMessage(Message.NO_PERMISSION_EXTEND_PROTECTED));
             return;
         }
 
         if (!p.getUniqueId().equals(shop.getVendor().getUniqueId()) && !p.hasPermission(Permissions.EXTEND_OTHER)) {
             e.setCancelled(true);
-            p.sendMessage(LanguageUtils.getMessage(Message.NO_PERMISSION_EXTEND_OTHERS));
+            p.sendMessage(messageRegistry.getMessage(Message.NO_PERMISSION_EXTEND_OTHERS));
             return;
         }
 
         if (!ItemUtils.isAir(b.getRelative(BlockFace.UP).getType())) {
             e.setCancelled(true);
-            p.sendMessage(LanguageUtils.getMessage(Message.CHEST_BLOCKED));
+            p.sendMessage(messageRegistry.getMessage(Message.CHEST_BLOCKED));
             return;
         }
 

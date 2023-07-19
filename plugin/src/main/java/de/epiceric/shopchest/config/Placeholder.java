@@ -29,7 +29,7 @@ public enum Placeholder {
     COMMAND("%COMMAND%"),
     DURABILITY("%DURABILITY%");
 
-    private String name;
+    private final String name;
 
     Placeholder(String name) {
         this.name = name;

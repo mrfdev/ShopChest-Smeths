@@ -1,5 +1,20 @@
 package de.epiceric.shopchest.command;
 
+import de.epiceric.shopchest.ShopChest;
+import de.epiceric.shopchest.config.Config;
+import de.epiceric.shopchest.config.Placeholder;
+import de.epiceric.shopchest.language.Message;
+import de.epiceric.shopchest.language.MessageRegistry;
+import de.epiceric.shopchest.language.Replacement;
+import de.epiceric.shopchest.utils.ClickType.SelectClickType;
+import de.epiceric.shopchest.utils.Permissions;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.*;
+import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachmentInfo;
+import org.bukkit.plugin.Plugin;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -7,28 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandMap;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.PluginCommand;
-import org.bukkit.command.SimpleCommandMap;
-import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.Player;
-import org.bukkit.permissions.PermissionAttachmentInfo;
-import org.bukkit.plugin.Plugin;
-
-import de.epiceric.shopchest.ShopChest;
-import de.epiceric.shopchest.config.Config;
-import de.epiceric.shopchest.config.Placeholder;
-import de.epiceric.shopchest.language.LanguageUtils;
-import de.epiceric.shopchest.language.Message;
-import de.epiceric.shopchest.language.Replacement;
-import de.epiceric.shopchest.utils.ClickType.SelectClickType;
-import de.epiceric.shopchest.utils.Permissions;
 
 public class ShopCommand {
 
@@ -73,10 +66,12 @@ public class ShopCommand {
                     }
                 }
 
+                final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
+
                 if (sender.hasPermission(Permissions.CREATE_ADMIN)) {
-                    return LanguageUtils.getMessage(Message.COMMAND_DESC_CREATE_ADMIN, cmdReplacement);
+                    return messageRegistry.getMessage(Message.COMMAND_DESC_CREATE_ADMIN, cmdReplacement);
                 } else if (receiveCreateMessage) {
-                    return LanguageUtils.getMessage(Message.COMMAND_DESC_CREATE, cmdReplacement);
+                    return messageRegistry.getMessage(Message.COMMAND_DESC_CREATE, cmdReplacement);
                 }
 
                 return "";
@@ -86,28 +81,32 @@ public class ShopCommand {
         addSubCommand(new ShopSubCommand("remove", true, executor, tabCompleter) {
             @Override
             public String getHelpMessage(CommandSender sender) {
-                return LanguageUtils.getMessage(Message.COMMAND_DESC_REMOVE, cmdReplacement);
+                final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
+                return messageRegistry.getMessage(Message.COMMAND_DESC_REMOVE, cmdReplacement);
             }
         });
 
         addSubCommand(new ShopSubCommand("info", true, executor, tabCompleter) {
             @Override
             public String getHelpMessage(CommandSender sender) {
-                return LanguageUtils.getMessage(Message.COMMAND_DESC_INFO, cmdReplacement);
+                final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
+                return messageRegistry.getMessage(Message.COMMAND_DESC_INFO, cmdReplacement);
             }
         });
 
         addSubCommand(new ShopSubCommand("limits", true, executor, tabCompleter) {
             @Override
             public String getHelpMessage(CommandSender sender) {
-                return LanguageUtils.getMessage(Message.COMMAND_DESC_LIMITS, cmdReplacement);
+                final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
+                return messageRegistry.getMessage(Message.COMMAND_DESC_LIMITS, cmdReplacement);
             }
         });
 
         addSubCommand(new ShopSubCommand("open", true, executor, tabCompleter) {
             @Override
             public String getHelpMessage(CommandSender sender) {
-                return LanguageUtils.getMessage(Message.COMMAND_DESC_OPEN, cmdReplacement);
+                final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
+                return messageRegistry.getMessage(Message.COMMAND_DESC_OPEN, cmdReplacement);
             }
         });
 
@@ -115,7 +114,8 @@ public class ShopCommand {
             @Override
             public String getHelpMessage(CommandSender sender) {
                 if (sender.hasPermission(Permissions.REMOVE_OTHER)) {
-                    return LanguageUtils.getMessage(Message.COMMAND_DESC_REMOVEALL, cmdReplacement);
+                    final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
+                    return messageRegistry.getMessage(Message.COMMAND_DESC_REMOVEALL, cmdReplacement);
                 } else {
                     return "";
                 }
@@ -126,7 +126,8 @@ public class ShopCommand {
             @Override
             public String getHelpMessage(CommandSender sender) {
                 if (sender.hasPermission(Permissions.RELOAD)) {
-                    return LanguageUtils.getMessage(Message.COMMAND_DESC_RELOAD, cmdReplacement);
+                    final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
+                    return messageRegistry.getMessage(Message.COMMAND_DESC_RELOAD, cmdReplacement);
                 } else {
                     return "";
                 }
@@ -137,7 +138,8 @@ public class ShopCommand {
             @Override
             public String getHelpMessage(CommandSender sender) {
                 if (sender.hasPermission(Permissions.UPDATE)) {
-                    return LanguageUtils.getMessage(Message.COMMAND_DESC_UPDATE, cmdReplacement);
+                    final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
+                    return messageRegistry.getMessage(Message.COMMAND_DESC_UPDATE, cmdReplacement);
                 } else {
                     return "";
                 }
@@ -148,7 +150,8 @@ public class ShopCommand {
             @Override
             public String getHelpMessage(CommandSender sender) {
                 if (sender.hasPermission(Permissions.CONFIG)) {
-                    return LanguageUtils.getMessage(Message.COMMAND_DESC_CONFIG, cmdReplacement);
+                    final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
+                    return messageRegistry.getMessage(Message.COMMAND_DESC_CONFIG, cmdReplacement);
                 } else {
                     return "";
                 }
@@ -264,8 +267,10 @@ public class ShopCommand {
     private void sendBasicHelpMessage(CommandSender sender) {
         plugin.debug("Sending basic help message to " + sender.getName());
 
+        final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
+
         sender.sendMessage(" ");
-        String header = LanguageUtils.getMessage(Message.COMMAND_DESC_HEADER,
+        String header = messageRegistry.getMessage(Message.COMMAND_DESC_HEADER,
                 new Replacement(Placeholder.COMMAND, Config.mainCommandName));
 
         if (!header.trim().isEmpty()) sender.sendMessage(header);
@@ -279,8 +284,8 @@ public class ShopCommand {
             sender.sendMessage(msg);
         }
 
-        String footer = LanguageUtils.getMessage(Message.COMMAND_DESC_FOOTER,
-                new Replacement(Placeholder.COMMAND,Config.mainCommandName));
+        String footer = messageRegistry.getMessage(Message.COMMAND_DESC_FOOTER,
+                new Replacement(Placeholder.COMMAND, Config.mainCommandName));
 
         if (!footer.trim().isEmpty()) sender.sendMessage(footer);
         sender.sendMessage(" ");
