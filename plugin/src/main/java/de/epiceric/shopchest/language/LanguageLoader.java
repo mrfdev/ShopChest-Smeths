@@ -22,11 +22,13 @@ public class LanguageLoader {
         final FileLoader fileLoader = new FileLoader();
         final LanguageConfigurationLoader languageConfigurationLoader = new LanguageConfigurationLoader();
 
-        final String requestedMessagePath = generateLocalizedPath(MESSAGES_FILENAME, locale);
-        final String defaultResourceMessagePath = generateLocalizedPath(MESSAGES_FILENAME, DEFAULT_LOCALE);
+        final String messageLocalizedFileName = getLocalizedFileName(MESSAGES_FILENAME, locale);
+        final String messageSavePath = getSavePath(messageLocalizedFileName);
+        final String messageResourcePath = getResourcePath(messageLocalizedFileName);
+        final String messageDefaultResourcePath = getResourcePath(getLocalizedFileName(MESSAGES_FILENAME, DEFAULT_LOCALE));
         final File messagesFile;
         try {
-            messagesFile = fileLoader.loadFile(requestedMessagePath, shopChestPlugin, requestedMessagePath, defaultResourceMessagePath);
+            messagesFile = fileLoader.loadFile(messageSavePath, shopChestPlugin, messageResourcePath, messageDefaultResourcePath);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -35,10 +37,10 @@ public class LanguageLoader {
         final String[] messages = messageRegistryLoader.getMessages();
         final MessageRegistry messageRegistry = new MessageRegistry(messages, p -> shopChestPlugin.getEconomy().format(p));
 
-        final String requestedItemsPath = generateLocalizedPath(ITEMS_FILENAME, locale);
+        final String itemSavePath = getSavePath(getLocalizedFileName(ITEMS_FILENAME, locale));
         final File itemsFile;
         try {
-            itemsFile = fileLoader.loadFile(requestedItemsPath, shopChestPlugin);
+            itemsFile = fileLoader.loadFile(itemSavePath, shopChestPlugin);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -48,8 +50,18 @@ public class LanguageLoader {
     }
 
     @NotNull
-    private String generateLocalizedPath(@NotNull String fileName, @NotNull String locale) {
-        return "lang" + File.separator + fileName + "-" + locale + ".lang";
+    private String getLocalizedFileName(@NotNull String baseName, @NotNull String locale) {
+        return baseName + "-" + locale + ".lang";
+    }
+
+    @NotNull
+    private String getResourcePath(@NotNull String fileName) {
+        return "lang/" + fileName;
+    }
+
+    @NotNull
+    private String getSavePath(@NotNull String fileName) {
+        return "lang" + File.separator + fileName;
     }
 
 }
