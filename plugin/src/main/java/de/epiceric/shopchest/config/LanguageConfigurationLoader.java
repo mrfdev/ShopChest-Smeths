@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,7 +19,7 @@ public class LanguageConfigurationLoader {
     public Map<String, String> getTranslations(@NotNull File file, @NotNull Logger logger) {
         final List<String> lines;
         try {
-            lines = Files.readAllLines(file.toPath());
+            lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             logger.log(Level.WARNING, "Can not read the message registry", e);
             return Collections.emptyMap();
