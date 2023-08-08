@@ -22,7 +22,7 @@ public class ShopProduct {
      * @return The localized name of the product's {@link ItemStack} in the selected language file.
      */
     public String getLocalizedName() {
-        return ShopChest.getInstance().getLanguageManager().getLocalizedItemManager().getItemName(getItemStack());
+        return ShopChest.getInstance().getLanguageManager().getItemNameManager().getItemName(getItemStack());
         //LanguageUtils.getItemName(getItemStack());
     }
 

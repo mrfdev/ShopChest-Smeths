@@ -1,4 +1,7 @@
-package de.epiceric.shopchest.language;
+package de.epiceric.shopchest.language.item;
+
+import java.util.Map;
+import java.util.Objects;
 
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -7,17 +10,16 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
-import java.util.Objects;
-
-public class LocalizedItemManager {
+public class LocalizedItemNameManager implements ItemNameManager {
 
     private final Map<String, String> itemTranslations;
 
-    public LocalizedItemManager(@NotNull Map<String, String> itemTranslations) {
+    public LocalizedItemNameManager(@NotNull Map<String, String> itemTranslations) {
         this.itemTranslations = itemTranslations;
     }
 
+    @Override
+    @Nullable
     public String getItemName(@Nullable ItemStack stack) {
         if (stack == null) {
             return null;

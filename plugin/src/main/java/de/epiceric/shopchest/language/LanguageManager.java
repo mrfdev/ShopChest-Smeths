@@ -2,14 +2,16 @@ package de.epiceric.shopchest.language;
 
 import org.jetbrains.annotations.NotNull;
 
+import de.epiceric.shopchest.language.item.ItemNameManager;
+
 public class LanguageManager {
 
     private final MessageRegistry messageRegistry;
-    private final LocalizedItemManager localizedItemManager;
+    private final ItemNameManager itemNameManager;
 
-    public LanguageManager(@NotNull MessageRegistry messageRegistry, @NotNull LocalizedItemManager localizedItemManager) {
+    public LanguageManager(@NotNull MessageRegistry messageRegistry, @NotNull ItemNameManager localizedItemManager) {
         this.messageRegistry = messageRegistry;
-        this.localizedItemManager = localizedItemManager;
+        this.itemNameManager = localizedItemManager;
     }
 
     @NotNull
@@ -18,8 +20,8 @@ public class LanguageManager {
     }
 
     @NotNull
-    public LocalizedItemManager getLocalizedItemManager() {
-        return localizedItemManager;
+    public ItemNameManager getItemNameManager() {
+        return itemNameManager;
     }
 
 }

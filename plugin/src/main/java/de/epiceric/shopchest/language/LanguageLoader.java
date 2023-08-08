@@ -3,6 +3,8 @@ package de.epiceric.shopchest.language;
 import de.epiceric.shopchest.ShopChest;
 import de.epiceric.shopchest.config.FileLoader;
 import de.epiceric.shopchest.config.LanguageConfigurationLoader;
+import de.epiceric.shopchest.language.item.ItemNameManager;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -45,7 +47,7 @@ public class LanguageLoader {
             throw new RuntimeException(e);
         }
         final Map<String, String> storedItems = languageConfigurationLoader.getTranslations(itemsFile, logger);
-        final LocalizedItemManager localizedItemManager = new LocalizedItemManager(storedItems);
+        final ItemNameManager localizedItemManager = new ItemNameManager(storedItems);
         return new LanguageManager(messageRegistry, localizedItemManager);
     }
 
