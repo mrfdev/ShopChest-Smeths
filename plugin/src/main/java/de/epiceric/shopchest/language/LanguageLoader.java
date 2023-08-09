@@ -64,9 +64,10 @@ public class LanguageLoader {
     @NotNull
     private ItemNameManager loadItemNameManager() {
         final String itemSavePath = getSavePath(getLocalizedFileName(ITEMS_FILENAME, locale));
+        final String itemsResourcePath = getResourcePath(getFullFileName(ITEMS_FILENAME));
         final File itemsFile;
         try {
-            itemsFile = fileLoader.loadFile(itemSavePath, shopChestPlugin);
+            itemsFile = fileLoader.loadFile(itemSavePath, shopChestPlugin, itemsResourcePath);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -79,8 +80,13 @@ public class LanguageLoader {
     }
 
     @NotNull
+    private String getFullFileName(@NotNull String fileName) {
+        return fileName + ".lang";
+    }
+
+    @NotNull
     private String getLocalizedFileName(@NotNull String baseName, @NotNull String locale) {
-        return baseName + "-" + locale + ".lang";
+        return getFullFileName(baseName + "-" + locale);
     }
 
     @NotNull
