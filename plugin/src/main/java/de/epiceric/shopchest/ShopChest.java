@@ -257,8 +257,8 @@ public class ShopChest extends JavaPlugin {
      * Load every language files. It needs to be called after the initialization of the configuration
      */
     public void loadLanguages() {
-        final LanguageLoader languageLoader = new LanguageLoader();
-        languageManager = languageLoader.loadLanguageManager(this, Config.languageFile);
+        final LanguageLoader languageLoader = new LanguageLoader(this, Config.languageFile);
+        languageManager = languageLoader.loadLanguageManager();
     }
 
     private void loadExternalPlugins() {

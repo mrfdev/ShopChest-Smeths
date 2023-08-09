@@ -1,16 +1,18 @@
 package de.epiceric.shopchest.language;
 
-import de.epiceric.shopchest.ShopChest;
-import de.epiceric.shopchest.config.FileLoader;
-import de.epiceric.shopchest.config.LanguageConfigurationLoader;
-import de.epiceric.shopchest.language.item.ItemNameManager;
-
-import org.jetbrains.annotations.NotNull;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import org.jetbrains.annotations.NotNull;
+
+import de.epiceric.shopchest.ShopChest;
+import de.epiceric.shopchest.config.FileLoader;
+import de.epiceric.shopchest.config.LanguageConfigurationLoader;
+import de.epiceric.shopchest.language.item.DummyItemNameManager;
+import de.epiceric.shopchest.language.item.ItemNameManager;
+import de.epiceric.shopchest.language.item.LocalizedItemNameManager;
 
 public class LanguageLoader {
 
@@ -18,27 +20,49 @@ public class LanguageLoader {
     private final static String MESSAGES_FILENAME = "messages";
     private final static String ITEMS_FILENAME = "items";
 
-    @NotNull
-    public LanguageManager loadLanguageManager(@NotNull ShopChest shopChestPlugin, @NotNull String locale) {
-        final Logger logger = shopChestPlugin.getLogger();
-        final FileLoader fileLoader = new FileLoader();
-        final LanguageConfigurationLoader languageConfigurationLoader = new LanguageConfigurationLoader();
+    private final ShopChest shopChestPlugin;
+    private final String locale;
+    private final Logger logger;
+    private final FileLoader fileLoader;
+    private final LanguageConfigurationLoader languageConfigurationLoader;
 
+    public LanguageLoader(@NotNull ShopChest shopChestPlugin, @NotNull String locale) {
+        this.shopChestPlugin = shopChestPlugin;
+        this.locale = locale;
+        logger = shopChestPlugin.getLogger();
+        fileLoader = new FileLoader();
+        languageConfigurationLoader = new LanguageConfigurationLoader();
+    }
+
+    @NotNull
+    public LanguageManager loadLanguageManager() {
+        final MessageRegistry messageRegistry = loadMessageRegistry();
+        final ItemNameManager itemNameManager = loadItemNameManager();
+        return new LanguageManager(messageRegistry, itemNameManager);
+    }
+
+    @NotNull
+    private MessageRegistry loadMessageRegistry() {
         final String messageLocalizedFileName = getLocalizedFileName(MESSAGES_FILENAME, locale);
         final String messageSavePath = getSavePath(messageLocalizedFileName);
         final String messageResourcePath = getResourcePath(messageLocalizedFileName);
-        final String messageDefaultResourcePath = getResourcePath(getLocalizedFileName(MESSAGES_FILENAME, DEFAULT_LOCALE));
+        final String messageDefaultResourcePath = getResourcePath(
+                getLocalizedFileName(MESSAGES_FILENAME, DEFAULT_LOCALE));
         final File messagesFile;
         try {
-            messagesFile = fileLoader.loadFile(messageSavePath, shopChestPlugin, messageResourcePath, messageDefaultResourcePath);
+            messagesFile = fileLoader.loadFile(messageSavePath, shopChestPlugin, messageResourcePath,
+                    messageDefaultResourcePath);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         final Map<String, String> storedMessages = languageConfigurationLoader.getTranslations(messagesFile, logger);
         final MessageRegistryLoader messageRegistryLoader = new MessageRegistryLoader(storedMessages);
         final String[] messages = messageRegistryLoader.getMessages();
-        final MessageRegistry messageRegistry = new MessageRegistry(messages, p -> shopChestPlugin.getEconomy().format(p));
+        return new MessageRegistry(messages, p -> shopChestPlugin.getEconomy().format(p));
+    }
 
+    @NotNull
+    private ItemNameManager loadItemNameManager() {
         final String itemSavePath = getSavePath(getLocalizedFileName(ITEMS_FILENAME, locale));
         final File itemsFile;
         try {
@@ -47,8 +71,11 @@ public class LanguageLoader {
             throw new RuntimeException(e);
         }
         final Map<String, String> storedItems = languageConfigurationLoader.getTranslations(itemsFile, logger);
-        final ItemNameManager localizedItemManager = new ItemNameManager(storedItems);
-        return new LanguageManager(messageRegistry, localizedItemManager);
+        if (storedItems.isEmpty()) {
+            logger.warning("You have to configure items language file. Follow the usage section on github");
+            return new DummyItemNameManager();
+        }
+        return new LocalizedItemNameManager(storedItems);
     }
 
     @NotNull
