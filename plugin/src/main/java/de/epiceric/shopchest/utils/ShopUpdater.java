@@ -1,16 +1,17 @@
 package de.epiceric.shopchest.utils;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-
+import de.epiceric.shopchest.ShopChest;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import de.epiceric.shopchest.ShopChest;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class ShopUpdater {
-    
+
+    private final static int MAX_QUEUE_SIZE = 10_000;
+
     private final ShopChest plugin;
     private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
 
@@ -28,6 +29,9 @@ public class ShopUpdater {
             thread = new Thread(() -> {
                 while (!Thread.interrupted()) {
                     try {
+                        if (queue.size() > MAX_QUEUE_SIZE) {
+                            queue.clear();
+                        }
                         queue.take().run();
                     } catch (InterruptedException e) {
                         break;
@@ -65,7 +69,7 @@ public class ShopUpdater {
 
     /**
      * Queue a task to update shops for the given player
-     * 
+     *
      * @param player Player to show updates
      */
     public void updateShops(Player player) {
@@ -74,7 +78,7 @@ public class ShopUpdater {
 
     /**
      * Queue a task to update shops for players in the given world
-     * 
+     *
      * @param world World in whose players to show updates
      */
     public void updateShops(World world) {
