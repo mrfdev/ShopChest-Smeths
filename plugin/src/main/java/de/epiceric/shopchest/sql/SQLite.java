@@ -2,14 +2,16 @@ package de.epiceric.shopchest.sql;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 import de.epiceric.shopchest.ShopChest;
+import de.epiceric.shopchest.shop.Shop;
+import de.epiceric.shopchest.utils.Callback;
+import de.epiceric.shopchest.utils.Utils;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class SQLite extends Database {
 
@@ -122,5 +124,64 @@ public class SQLite extends Database {
     @Override
     String getQueryGetTable() {
         return "SELECT name FROM sqlite_master WHERE type='table' AND name=?";
+    }
+
+    @Override
+    public void addShop(Shop shop, Callback<Integer> callback) {
+        final String queryNoId = "REPLACE INTO " + tableShops + " (vendor,product,amount,world,x,y,z,buyprice,sellprice,shoptype) VALUES(?,?,?,?,?,?,?,?,?,?) RETURNING id";
+        final String queryWithId = "REPLACE INTO " + tableShops + " (id,vendor,product,amount,world,x,y,z,buyprice,sellprice,shoptype) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                String query = shop.hasId() ? queryWithId : queryNoId;
+
+                try (Connection con = dataSource.getConnection();
+                     PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+                    int i = 0;
+                    if (shop.hasId()) {
+                        i = 1;
+                        ps.setInt(1, shop.getID());
+                    }
+
+                    ps.setString(i+1, shop.getVendor().getUniqueId().toString());
+                    ps.setString(i+2, Utils.encode(shop.getProduct().getItemStack()));
+                    ps.setInt(i+3, shop.getProduct().getAmount());
+                    ps.setString(i+4, shop.getLocation().getWorld().getName());
+                    ps.setInt(i+5, shop.getLocation().getBlockX());
+                    ps.setInt(i+6, shop.getLocation().getBlockY());
+                    ps.setInt(i+7, shop.getLocation().getBlockZ());
+                    ps.setDouble(i+8, shop.getBuyPrice());
+                    ps.setDouble(i+9, shop.getSellPrice());
+                    ps.setString(i+10, shop.getShopType().toString());
+
+                    if (!shop.hasId()) {
+                        int shopId = -1;
+                        ResultSet rs = ps.executeQuery();
+                        if (rs.next()) {
+                            shopId = rs.getInt(1);
+                        }
+
+                        shop.setId(shopId);
+                    } else {
+                        ps.executeUpdate();
+                    }
+
+                    if (callback != null) {
+                        callback.callSyncResult(shop.getID());
+                    }
+
+                    plugin.debug("Adding shop to database (#" + shop.getID() + ")");
+                } catch (SQLException ex) {
+                    if (callback != null) {
+                        callback.callSyncError(ex);
+                    }
+
+                    plugin.getLogger().severe("Failed to add shop to database");
+                    plugin.debug("Failed to add shop to database (#" + shop.getID() + ")");
+                    plugin.debug(ex);
+                }
+            }
+        }.runTaskAsynchronously(plugin);
     }
 }
