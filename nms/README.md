@@ -16,3 +16,4 @@ You need to run the BuildTools for the following versions:
 - 1.19.4
 - 1.20.1
 - 1.20.2
+- 1.20.3
