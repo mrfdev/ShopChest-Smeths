@@ -97,6 +97,8 @@ public class PlatformLoader {
                 return new de.epiceric.shopchest.nms.v1_20_R2.PlatformImpl();
             case "60a2bb6bf2684dc61c56b90d7c41bddc": //1.20.4 (1.20.3 virtually does not exist)
                 return new de.epiceric.shopchest.nms.v1_20_R3.PlatformImpl();
+            case "ad1a88fd7eaf2277f2507bf34d7b994c": // 1.20.5
+                return new de.epiceric.shopchest.nms.v1_20_R4.PlatformImpl();
             default:
                 return null;
         }
