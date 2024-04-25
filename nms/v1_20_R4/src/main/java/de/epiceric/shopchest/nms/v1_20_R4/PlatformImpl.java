@@ -1,4 +1,4 @@
-package de.epiceric.shopchest.nms.v1_20_R3;
+package de.epiceric.shopchest.nms.v1_20_R4;
 
 import de.epiceric.shopchest.nms.FakeArmorStand;
 import de.epiceric.shopchest.nms.FakeItem;

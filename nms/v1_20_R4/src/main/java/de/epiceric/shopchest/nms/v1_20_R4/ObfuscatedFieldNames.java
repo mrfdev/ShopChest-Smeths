@@ -1,4 +1,4 @@
-package de.epiceric.shopchest.nms.v1_20_R3;
+package de.epiceric.shopchest.nms.v1_20_R4;
 
 public class ObfuscatedFieldNames {
 
