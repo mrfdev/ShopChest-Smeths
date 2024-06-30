@@ -1,12 +1,13 @@
 package de.epiceric.shopchest.nms;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
+import org.bukkit.Bukkit;
+
 import de.epiceric.shopchest.nms.reflection.PlatformImpl;
 import de.epiceric.shopchest.nms.reflection.ShopChestDebug;
 import de.epiceric.shopchest.utils.Utils;
-import org.bukkit.Bukkit;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 public class PlatformLoader {
 
@@ -17,19 +18,25 @@ public class PlatformLoader {
     }
 
     public Platform loadPlatform() {
-        final String nmsVersion = Utils.getServerVersion();
-
-        Platform platform = getReflectionPlatform(nmsVersion);
-        if (platform != null) {
+        Platform platform = null;
+        if (Utils.getMajorVersion() < 17) {
+            final String bukkitPackageVersion = getBukkitPackageVersion();
+            platform = getReflectionPlatform(bukkitPackageVersion);
+            if (platform == null) {
+                throw new RuntimeException(
+                        "Could not retrieve the mappings version. The server version might be too old ("
+                                + bukkitPackageVersion + ").");
+            }
             return platform;
         }
         final String mappingsVersion = getMappingsVersion();
         if (mappingsVersion == null) {
-            throw new RuntimeException("Could not retrieve the mappings version. The server version might be too old (" + nmsVersion + ").");
+            throw new RuntimeException("Could not get any information about the server version");
         }
         platform = getSpecificPlatform(mappingsVersion);
         if (platform == null) {
-            throw new RuntimeException("Server version not officially supported. Version: '" + nmsVersion + "', Mappings : " + "'" + mappingsVersion + "'");
+            throw new RuntimeException(
+                    "Server version not officially supported. Mappings : " + "'" + mappingsVersion + "'");
         }
         return platform;
     }
@@ -57,9 +64,15 @@ public class PlatformLoader {
         }
     }
 
+    private String getBukkitPackageVersion() {
+        final String packageName = Bukkit.getServer().getClass().getPackage().getName();
+        return packageName.substring(packageName.lastIndexOf(".") + 1);
+    }
+
     private String getMappingsVersion() {
         try {
-            final String craftMagicNumbersClassName = Bukkit.getServer().getClass().getPackage().getName() + ".util.CraftMagicNumbers";
+            final String craftMagicNumbersClassName = Bukkit.getServer().getClass().getPackage().getName()
+                    + ".util.CraftMagicNumbers";
             final Class<?> craftMagicNumbersClass = Class.forName(craftMagicNumbersClassName);
             final Method method = craftMagicNumbersClass.getDeclaredMethod("getMappingsVersion");
             method.setAccessible(true);
